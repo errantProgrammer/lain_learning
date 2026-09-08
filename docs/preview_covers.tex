@@ -1,0 +1,188 @@
+\documentclass[11pt,a4paper,oneside]{report}
+\usepackage{style/cybersec}
+
+\begin{document}
+
+% ================================================================================
+% PROPUESTA 1: Cyber Dossier (Barra Lateral Ejecutiva)
+% ================================================================================
+\begin{titlepage}
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[csecNavy] (current page.north west) rectangle ([xshift=2.4cm]current page.south west);
+    \fill[csecCyan] ([xshift=2.22cm]current page.north west) rectangle ([xshift=2.4cm]current page.south west);
+    \node[anchor=north, text=white, opacity=0.85] at ([xshift=1.2cm, yshift=-3.5cm]current page.north west) {\Huge \faUserShield};
+  \end{tikzpicture}
+  
+  \vspace*{1cm}
+  \hspace*{1.4cm}
+  \begin{minipage}{0.84\textwidth}
+    {\scriptsize \color{csecCyan}\textbf{\faTerminal\ OFFENSIVE SECURITY KNOWLEDGE BASE}}\par
+    \vspace{0.6cm}
+    {\fontsize{28}{34}\selectfont \textbf{\color{csecDark}CYBERSECURITY}}\par
+    \vspace{0.2cm}
+    {\fontsize{26}{32}\selectfont \textbf{\color{csecCyan}PLAYBOOK}}\par
+    \vspace{0.4cm}
+    {\large \color{csecNavy}\textbf{Base de Conocimiento, Retos \& Writeups Técnicos}}\par
+    \vspace{1.2cm}
+    
+    \begin{tcolorbox}[
+      enhanced,
+      colback=csecLight,
+      colframe=csecBorder,
+      boxrule=0.8pt,
+      borderline west={3.5pt}{0pt}{csecCyan},
+      arc=3pt,
+      width=\textwidth,
+      top=12pt, bottom=12pt, left=12pt, right=12pt
+    ]
+      {\normalsize \textbf{\color{csecDark}Historial Consolidado de Resolución de Entornos}}\par
+      \vspace{6pt}
+      {\small \color{csecNavy}
+      Documentación técnica estructurada de auditorías de seguridad, explotación ética, resolución de retos CTF y análisis de vulnerabilidades.
+      }\par
+      \vspace{10pt}
+      \platformBadge{HackTheBox} \hspace{3pt}
+      \platformBadge{TryHackMe} \hspace{3pt}
+      \platformBadge{PortSwigger} \hspace{3pt}
+      \platformBadge{CTF}
+    \end{tcolorbox}
+    
+    \vspace{4.5cm}
+    
+    \begin{minipage}[t]{0.48\textwidth}
+      \small\color{csecDark}\textbf{\faUserShield\ Auditor / Investigador:}\par
+      \vspace{2pt}
+      \large\textbf{\color{csecNavy}errantprogrammer}\par
+      \vspace{1pt}
+      \footnotesize\color{csecMuted}Offensive Security
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.48\textwidth}
+      \flushright
+      \small\color{csecDark}\textbf{\faCalendar*\ Versión \& Fecha:}\par
+      \vspace{2pt}
+      \large\textbf{\color{csecNavy}v1.0 (2026)}\par
+      \vspace{1pt}
+      \footnotesize\color{csecMuted}\today
+    \end{minipage}
+  \end{minipage}
+\end{titlepage}
+
+% ================================================================================
+% PROPUESTA 2: Geometric Modern Blueprint (Acentos Angulares)
+% ================================================================================
+\begin{titlepage}
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[csecNavy] (current page.north east) -- ([xshift=-6cm]current page.north east) -- ([yshift=-4cm]current page.north east) -- cycle;
+    \fill[csecCyan] ([xshift=-6cm]current page.north east) -- ([xshift=-6.4cm]current page.north east) -- ([yshift=-4.3cm]current page.north east) -- ([yshift=-4cm]current page.north east) -- cycle;
+    \fill[csecNavy] (current page.south west) -- ([xshift=6cm]current page.south west) -- ([yshift=4cm]current page.south west) -- cycle;
+    \fill[csecCyan] ([xshift=6cm]current page.south west) -- ([xshift=6.4cm]current page.south west) -- ([yshift=4.3cm]current page.south west) -- ([yshift=4cm]current page.south west) -- cycle;
+    \draw[csecBorder, line width=0.6pt] ([xshift=1.2cm, yshift=-1.2cm]current page.north west) rectangle ([xshift=-1.2cm, yshift=1.2cm]current page.south east);
+  \end{tikzpicture}
+  
+  \centering
+  \vspace*{2cm}
+  
+  {\scriptsize \color{csecCyan}\textbf{\faLock\ CONFIDENTIAL TECHNICAL PLAYBOOK}}\par
+  \vspace{0.8cm}
+  {\fontsize{30}{36}\selectfont \textbf{\color{csecDark}CYBERSECURITY}}\par
+  \vspace{0.2cm}
+  {\fontsize{24}{30}\selectfont \color{csecCyan}\textbf{WRITEUPS \& PLAYBOOK}}\par
+  \vspace{0.5cm}
+  {\large \color{csecMuted} Registro Técnico de Auditorías \& Desafíos CTF}\par
+  \vspace{1.5cm}
+  
+  \begin{tcolorbox}[
+    enhanced,
+    colback=white,
+    colframe=csecBorder,
+    boxrule=0.8pt,
+    arc=4pt,
+    width=0.82\textwidth,
+    top=14pt, bottom=14pt
+  ]
+    \centering
+    {\small \textbf{\color{csecDark}Plataformas y Entornos Evaluados}}\par
+    \vspace{10pt}
+    \platformBadge{HackTheBox} \quad
+    \platformBadge{TryHackMe} \quad
+    \platformBadge{PortSwigger} \quad
+    \platformBadge{CTF}\par
+    \vspace{8pt}
+    {\scriptsize \color{csecMuted} Análisis de vectores de ataque, cadenas de explotación y remediación.}
+  \end{tcolorbox}
+  
+  \vfill
+  
+  \begin{minipage}{0.75\textwidth}
+    \centering
+    {\small \color{csecMuted} Auditor Técnico / Investigador:}\par
+    \vspace{2pt}
+    {\large \textbf{\color{csecDark} errantprogrammer}}\par
+    \vspace{0.3cm}
+    {\footnotesize \color{csecCyan}\textbf{v1.0} \quad \color{csecBorder}\textbar\quad \color{csecMuted}\today}
+  \end{minipage}
+  \vspace*{1cm}
+\end{titlepage}
+
+% ================================================================================
+% PROPUESTA 3: Dual-Tone Split (Cabecera Marina + Cuerpo Blanco)
+% ================================================================================
+\begin{titlepage}
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[csecNavy] (current page.north west) rectangle ([yshift=-8cm]current page.north east);
+    \fill[csecCyan] ([yshift=-8cm]current page.north west) rectangle ([yshift=-8.2cm]current page.north east);
+  \end{tikzpicture}
+  
+  \vspace*{1cm}
+  
+  {\scriptsize \color{csecCyan}\textbf{\faUserShield\ SECURITY RESEARCH \& AUDIT PLAYBOOK}}\par
+  \vspace{0.4cm}
+  {\fontsize{28}{34}\selectfont \textbf{\color{white}CYBERSECURITY PLAYBOOK}}\par
+  \vspace{0.3cm}
+  {\large \color{csecBorder}\textbf{Base de Conocimiento \& Reportes Técnicos}}\par
+  \vspace{3.5cm}
+  
+  \begin{tcolorbox}[
+    enhanced,
+    colback=csecLight,
+    colframe=csecBorder,
+    boxrule=0.8pt,
+    borderline west={4pt}{0pt}{csecCyan},
+    arc=4pt,
+    top=14pt, bottom=14pt, left=14pt, right=14pt
+  ]
+    {\large \textbf{\color{csecDark}Registro Maestro de Soluciones}}\par
+    \vspace{6pt}
+    {\small \color{csecNavy}
+    Documentación exhaustiva de vulnerabilidades descubiertas, explotación de servicios, análisis de binarios (Pwn/Reversing), ataques web y elevación de privilegios en entornos controlados.
+    }\par
+    \vspace{10pt}
+    \platformBadge{HackTheBox} \hspace{3pt}
+    \platformBadge{TryHackMe} \hspace{3pt}
+    \platformBadge{PortSwigger} \hspace{3pt}
+    \platformBadge{CTF}
+  \end{tcolorbox}
+  
+  \vfill
+  
+  \begin{minipage}[t]{0.48\textwidth}
+    \small\color{csecDark}\textbf{\faUserShield\ Auditor Principal:}\par
+    \vspace{2pt}
+    \large\textbf{\color{csecDark}errantprogrammer}\par
+    \vspace{1pt}
+    \scriptsize\color{csecMuted}Offensive Security \& Pentesting
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.48\textwidth}
+    \flushright
+    \small\color{csecDark}\textbf{\faFileCode\ Control de Versión:}\par
+    \vspace{2pt}
+    \normalsize\textbf{\color{csecDark}Versión 1.0 --- \today}\par
+    \vspace{1pt}
+    \scriptsize\color{csecMuted}Documento de Acceso Técnico
+  \end{minipage}
+  \vspace*{0.5cm}
+\end{titlepage}
+
+\end{document}

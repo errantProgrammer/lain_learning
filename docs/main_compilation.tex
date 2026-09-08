@@ -1,0 +1,149 @@
+% !TeX document-id = {ceb9b0f7-fe16-4e6e-808c-436a33f8cebf}
+% !TeX program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+
+\documentclass[11pt,a4paper,oneside]{report}
+
+\usepackage{style/cybersec}
+\usepackage{subfiles}
+
+\begin{document}
+
+% ================================================================================
+% Portada Principal del Libro Recopilatorio (Geometric Blueprint - Fondo Claro)
+% ================================================================================
+\begin{titlepage}
+	\begin{tikzpicture}[remember picture,overlay]
+		% Esquina superior derecha: Acentos geométricos
+		\fill[csecNavy] (current page.north east) -- ([xshift=-6.5cm]current page.north east) -- ([yshift=-4.2cm]current page.north east) -- cycle;
+		\fill[csecCyan] ([xshift=-6.5cm]current page.north east) -- ([xshift=-6.9cm]current page.north east) -- ([yshift=-4.5cm]current page.north east) -- ([yshift=-4.2cm]current page.north east) -- cycle;
+		% Esquina inferior izquierda: Acentos geométricos
+		\fill[csecNavy] (current page.south west) -- ([xshift=6.5cm]current page.south west) -- ([yshift=4.2cm]current page.south west) -- cycle;
+		\fill[csecCyan] ([xshift=6.5cm]current page.south west) -- ([xshift=6.9cm]current page.south west) -- ([yshift=4.5cm]current page.south west) -- ([yshift=4.2cm]current page.south west) -- cycle;
+		% Marco perimetral fino
+		\draw[csecBorder, line width=0.6pt] ([xshift=1.2cm, yshift=-1.2cm]current page.north west) rectangle ([xshift=-1.2cm, yshift=1.2cm]current page.south east);
+	\end{tikzpicture}
+
+	\centering
+	\vspace*{2.8cm}
+
+	% Título Principal
+	{\fontsize{34}{40}\selectfont \textbf{\color{csecDark}CYBERSECURITY}}\par
+	\vspace{0.2cm}
+	{\fontsize{26}{32}\selectfont \color{csecCyan}\textbf{PLAYBOOK \& WRITEUPS}}\par
+	\vspace{1.8cm}
+
+	% Colección de Plataformas y Entornos Evaluados (Fácilmente extensible)
+	\begin{tcolorbox}[
+			enhanced,
+			colback=csecLight,
+			colframe=csecBorder,
+			boxrule=0.8pt,
+			arc=5pt,
+			width=0.85\textwidth,
+			top=14pt, bottom=14pt, left=14pt, right=14pt
+		]
+		\centering
+		{\normalsize \textbf{\color{csecDark}Plataformas y Entornos Evaluados}}\par
+		\vspace{12pt}
+		\platformBadge{HackTheBox} \hspace{4pt}
+		\platformBadge{TryHackMe} \hspace{4pt}
+		\platformBadge{PortSwigger} \hspace{4pt}
+		\platformBadge{pwn.college} \hspace{4pt}
+		\platformBadge{CTF}
+	\end{tcolorbox}
+
+	\vfill
+
+	% Pie de Portada: Autor, Versión y Fecha
+	\begin{minipage}{0.75\textwidth}
+		\centering
+		{\Large \textbf{\color{csecDark}errantprogrammer}}\par
+		\vspace{0.3cm}
+		{\footnotesize \color{csecCyan}\textbf{v1.0 (2026)} \quad \color{csecBorder}\textbar\quad \color{csecMuted}\today}
+	\end{minipage}
+	\vspace*{1.2cm}
+\end{titlepage}
+
+% ================================================================================
+% Páginas Preliminares (Dashboard e Índice de Contenidos)
+% ================================================================================
+\pagenumbering{roman}
+\pagestyle{fancy}
+\setCustomHeader{{\color{csecCyan}\faChartBar}\ \textbf{Playbook}}{Dashboard de Progreso}{\today}
+
+\section*{Dashboard de Máquinas y Desafíos Resueltos}
+\addcontentsline{toc}{chapter}{Dashboard de Progreso}
+
+\renderDashboard
+
+\vspace{0.5cm}
+
+% ================================================================================
+% Tabla de Contenidos General
+% ================================================================================
+\cleardoublepage
+\setCustomHeader{{\color{csecCyan}\faList}\ \textbf{Playbook}}{Índice General}{\today}
+\tableofcontents
+\cleardoublepage
+
+% ================================================================================
+% Inicio de Capítulos Técnicos
+% ================================================================================
+\pagenumbering{arabic}
+
+% ================================================================================
+% CAPÍTULO 1: GUÍA DE USO Y MANUAL TÉCNICO
+% ================================================================================
+\subfile{chapters/guide/template_guide}
+
+% ================================================================================
+% CAPÍTULO 2: KNOWLEDGE BASE & BITÁCORA DE APRENDIZAJE
+% ================================================================================
+\subfile{chapters/knowledge_base/knowledge_base}
+
+% % ================================================================================
+% % PARTE I: HACK THE BOX
+% % ================================================================================
+% \chapter{Hack The Box}
+% \label{chap:hackthebox}
+% \setPlatformHeader{HackTheBox}{Hack The Box}{\today}
+% En este capítulo se recopilan los informes técnicos detallados de las máquinas resueltas en la plataforma \textbf{Hack The Box}.
+%
+% % Inclusión modular del writeup de Lame
+%
+% % ================================================================================
+% % PARTE II: TRYHACKME
+% % ================================================================================
+% \chapter{TryHackMe}
+% \label{chap:tryhackme}
+% \setPlatformHeader{TryHackMe}{TryHackMe}{\today}
+% En este capítulo se documentan las salas temáticas y redes de práctica completadas en la plataforma \textbf{TryHackMe}.
+%
+% \begin{notebox}[Salas en Progreso]
+% 	Para incorporar una nueva sala de TryHackMe, utiliza la plantilla ubicada en \texttt{writeups/tryhackme/\_template\_thm.tex} y enlázala en este capítulo mediante el comando \texttt{\textbackslash subfile\{writeups/tryhackme/nombre\_sala/writeup\}}.
+% \end{notebox}
+%
+% % ================================================================================
+% % PARTE III: PORTSWIGGER WEB SECURITY ACADEMY
+% % ================================================================================
+% \chapter{PortSwigger Web Security Academy}
+% \label{chap:portswigger}
+% \setPlatformHeader{PortSwigger}{PortSwigger Academy}{\today}
+% Documentación y soluciones de laboratorios centrados en vulnerabilidades de aplicaciones web (OWASP Top 10, SQLi, XSS, CSRF, SSRF, Deserialización, etc.).
+%
+% \begin{notebox}[Laboratorios Web]
+% 	Utiliza la plantilla en \texttt{writeups/portswigger/\_template\_portswigger.tex} para documentar vulnerabilidades web individuales.
+% \end{notebox}
+%
+% % ================================================================================
+% % PARTE IV: CTF CHALLENGES & COMPETENCIAS
+% % ================================================================================
+% \chapter{CTF Challenges \& Competencias}
+% \label{chap:ctfs}
+% \setPlatformHeader{CTF}{CTF Challenges}{\today}
+% Resolución de retos específicos clasificados por categorías: Criptografía, Ingeniería Inversa, Explotación de Binarios (Pwn), Análisis Forense y OSINT.
+
+
+\end{document}

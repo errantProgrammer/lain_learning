@@ -1,0 +1,140 @@
+% !TeX program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+
+\documentclass[../../../main_compilation.tex]{subfiles}
+
+\begin{document}
+
+% ================================================================================
+% Encabezado / Ficha de la Máquina
+% ================================================================================
+\section[HTB - NOMBRE\_MAQUINA (10.10.10.X)]{NOMBRE\_MAQUINA — HackTheBox}
+\label{sec:htb-nombre-maquina}
+
+\targetSummary%
+{NOMBRE\_MAQUINA}% Nombre de la máquina
+{10.10.10.X}% IP
+{HackTheBox}% Plataforma o imagen
+{Easy}% Dificultad: Easy, Medium, Hard, Insane
+{Linux}% Sistema Operativo: Linux, Windows, Android
+{Web / RCE / SUID}% Categoría o Tags clave
+{\today}% Fecha de resolución
+{user\_flag\_hash}% User Flag
+{root\_flag\_hash}% Root Flag
+
+\vspace{0.4cm}
+
+% ================================================================================
+% 1. Resumen Ejecutivo
+% ================================================================================
+\subsection{Resumen Ejecutivo}
+Breve descripción de la máquina, vectores de entrada y vulnerabilidades clave encontradas.
+
+\begin{vulnbox}{Nombre de la Vulnerabilidad Principal}{High}
+	\textbf{CVE:} CVE-202X-XXXX \hfill \textbf{CVSS v3.1:} 8.8 (High)\\
+	\textbf{Afecta:} Nombre y versión del servicio vulnerable.\\
+	\textbf{Impacto:} Resumen del impacto en el sistema.
+\end{vulnbox}
+
+% ================================================================================
+% 2. Fase de Reconocimiento y Enumeración
+% ================================================================================
+\subsection{Fase 1: Reconocimiento y Enumeración}
+
+\begin{terminal}[kali@pentest:\~{}]
+	# 1. Escaneo rápido de puertos abiertos
+	nmap -p- --open -sS --min-rate 5000 -n -Pn 10.10.10.X -oN nmap_all.txt
+
+	# 2. Escaneo exhaustivo de versiones y scripts por defecto
+	nmap -p 22,80 -sC -sV 10.10.10.X -oN nmap_services.txt
+\end{terminal}
+
+\begin{table}[h!]
+	\centering
+	\small
+	\begin{tabularx}{\textwidth}{l l l X}
+		\toprule
+		\rowcolor{csecDark} \textbf{\color{white}Puerto} & \textbf{\color{white}Estado} & \textbf{\color{white}Servicio} & \textbf{\color{white}Versión / Detalles} \\
+		\midrule
+		\textbf{22/tcp}                                  & Abierto                      & SSH                            & OpenSSH 8.X                              \\
+		\textbf{80/tcp}                                  & Abierto                      & HTTP                           & Apache 2.4.X                             \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Puertos y servicios descubiertos.}
+\end{table}
+
+\begin{notebox}[Notas de Reconocimiento]
+	Anotaciones de fuzzing con gobuster/ffuf, tecnologías detectadas con Wappalyzer o subdominios descubiertos.
+\end{notebox}
+
+% ================================================================================
+% 3. Fase de Explotación / Acceso Inicial
+% ================================================================================
+\subsection{Fase 2: Explotación (Acceso Inicial)}
+
+\begin{codebox}[Python]{exploit.py}
+	# Código / script de prueba de concepto o exploit utilizado
+	import requests
+
+	url = "http://10.10.10.X/endpoint"
+	# ...
+\end{codebox}
+
+\begin{terminal}[kali@pentest:\~{}]
+	nc -lvnp 4444
+\end{terminal}
+
+% ================================================================================
+% 4. Escalada de Privilegios
+% ================================================================================
+\subsection{Fase 3: Escalada de Privilegios}
+
+\begin{terminal}[user@target:\~{}]
+	sudo -l
+	# LinPEAS / WinPEAS / SUID / Tareas Cron
+\end{terminal}
+
+\begin{flagbox}{User Flag}
+	user_flag_hash_aqui
+\end{flagbox}
+
+\begin{flagbox}{Root / System Flag}
+	root_flag_hash_aqui
+\end{flagbox}
+
+% ================================================================================
+% 5. Remediaciones
+% ================================================================================
+\subsection{Fase 4: Remediación y Recomendaciones}
+
+\begin{mitigationbox}[Plan de Remediación]
+	\begin{itemize}[leftmargin=*]
+		\item Actualización del software a la versión corregida.
+		\item Corrección de permisos y privilegios excesivos.
+		\item Implementación de controles de acceso y firewall.
+	\end{itemize}
+\end{mitigationbox}
+
+% ================================================================================
+% 6. Lecciones y Conceptos Aprendidos
+% ================================================================================
+\subsection{Fase 5: Conocimientos y Técnicas Aprendidas}
+
+\begin{learningbox}[Lecciones Asimiladas en este Reto]
+	\begin{itemize}[leftmargin=*]
+		\item \textbf{Vector / Técnica Aprendida:} Descripción del concepto o vector identificado.
+		\item \textbf{Herramienta / Payload Clave:} Comando o payload novedoso descubierto.
+		\item \textbf{Error / Obstáculo Superado:} Dificultad encontrada durante la resolución y cómo se resolvió.
+	\end{itemize}
+\end{learningbox}
+
+\begin{sourcebox}[Fuentes de Consulta y Referencias del Reto]
+	\begin{itemize}[leftmargin=*]
+		\resourceItem{Docs}{Documentación Oficial / CVE}{Enlace o RFC correspondiente}
+		\resourceItem{Libro}{Título del Libro (Autor)}{Capítulo relevante para profundizar}
+		\resourceItem{Web}{Writeup / Blog de Referencia}{\url{https://...}}
+	\end{itemize}
+\end{sourcebox}
+
+\end{document}

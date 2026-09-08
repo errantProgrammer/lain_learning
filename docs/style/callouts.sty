@@ -1,0 +1,188 @@
+\ProvidesPackage{callouts}[2026/09/08 Modern Rounded Callouts and Alerts for Cybersecurity Theme by errantprogrammer]
+
+% ================================================================================
+% Dependencias de paquetes para Callouts
+% ================================================================================
+\RequirePackage{xcolor}
+\RequirePackage{fontawesome5}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{skins}
+
+% ================================================================================
+% Paleta de colores de respaldo (si no han sido definidos previamente)
+% ================================================================================
+\providecolor{csecDark}{HTML}{0F172A}       % Texto principal oscuro
+\providecolor{csecNavy}{HTML}{1E293B}       % Fondo navy oscuro
+\providecolor{csecBorder}{HTML}{CBD5E1}     % Borde sutil
+\providecolor{csecCyan}{HTML}{0284C7}       % Acento cyan / información
+\providecolor{csecGreen}{HTML}{059669}      % Acento verde / mitigación / tips
+\providecolor{sevMedium}{HTML}{D97706}      % Ámbar / advertencias
+\providecolor{sevCritical}{HTML}{DC2626}    % Rojo / alertas críticas
+\providecolor{csecPurple}{HTML}{7C3AED}     % Púrpura / aprendizajes
+
+% ================================================================================
+% 1. Cajas de Información y Notas Clave (Cyan)
+% ================================================================================
+\newtcolorbox{notebox}[1][Nota Clave]{
+    enhanced,
+    arc=5pt,
+    toprule=0.7pt,
+    bottomrule=0.7pt,
+    rightrule=0.7pt,
+    leftrule=4pt,
+    colframe=csecCyan,
+    colback=csecCyan!5,
+    top=7pt, bottom=7pt, left=10pt, right=10pt,
+    title={{\large\color{csecCyan}\faInfoCircle}\hspace{6pt}\textbf{\color{csecDark}#1}},
+    attach title to upper={\par\vspace{4pt}{\color{csecCyan!35}\hrule height 0.5pt}\vspace{6pt}},
+    coltitle=csecDark,
+    fonttitle=\normalsize
+}
+
+\newtcolorbox{infobox}[1][Información]{
+    enhanced,
+    arc=5pt,
+    toprule=0.7pt,
+    bottomrule=0.7pt,
+    rightrule=0.7pt,
+    leftrule=4pt,
+    colframe=csecCyan,
+    colback=csecCyan!5,
+    top=7pt, bottom=7pt, left=10pt, right=10pt,
+    title={{\large\color{csecCyan}\faInfoCircle}\hspace{6pt}\textbf{\color{csecDark}#1}},
+    attach title to upper={\par\vspace{4pt}{\color{csecCyan!35}\hrule height 0.5pt}\vspace{6pt}},
+    coltitle=csecDark,
+    fonttitle=\normalsize
+}
+
+% ================================================================================
+% 2. Caja de Consejos y Pro-Tips (Verde)
+% ================================================================================
+\newtcolorbox{tipbox}[1][Pro-Tip]{
+    enhanced,
+    arc=5pt,
+    toprule=0.7pt,
+    bottomrule=0.7pt,
+    rightrule=0.7pt,
+    leftrule=4pt,
+    colframe=csecGreen,
+    colback=csecGreen!5,
+    top=7pt, bottom=7pt, left=10pt, right=10pt,
+    title={{\large\color{csecGreen}\faLightbulb}\hspace{6pt}\textbf{\color{csecDark}#1}},
+    attach title to upper={\par\vspace{4pt}{\color{csecGreen!35}\hrule height 0.5pt}\vspace{6pt}},
+    coltitle=csecDark,
+    fonttitle=\normalsize
+}
+
+% ================================================================================
+% 3. Cajas de Advertencia y Precaución (Ámbar / Naranja)
+% ================================================================================
+\newtcolorbox{warnbox}[1][Advertencia]{
+    enhanced,
+    arc=5pt,
+    toprule=0.7pt,
+    bottomrule=0.7pt,
+    rightrule=0.7pt,
+    leftrule=4pt,
+    colframe=sevMedium,
+    colback=sevMedium!5,
+    top=7pt, bottom=7pt, left=10pt, right=10pt,
+    title={{\large\color{sevMedium}\faExclamationTriangle}\hspace{6pt}\textbf{\color{csecDark}#1}},
+    attach title to upper={\par\vspace{4pt}{\color{sevMedium!35}\hrule height 0.5pt}\vspace{6pt}},
+    coltitle=csecDark,
+    fonttitle=\normalsize
+}
+
+\newtcolorbox{warningbox}[1][Advertencia / Precaución]{
+    enhanced,
+    arc=5pt,
+    toprule=0.7pt,
+    bottomrule=0.7pt,
+    rightrule=0.7pt,
+    leftrule=4pt,
+    colframe=sevMedium,
+    colback=sevMedium!5,
+    top=7pt, bottom=7pt, left=10pt, right=10pt,
+    title={{\large\color{sevMedium}\faExclamationTriangle}\hspace{6pt}\textbf{\color{csecDark}#1}},
+    attach title to upper={\par\vspace{4pt}{\color{sevMedium!35}\hrule height 0.5pt}\vspace{6pt}},
+    coltitle=csecDark,
+    fonttitle=\normalsize
+}
+
+% ================================================================================
+% 4. Caja de Alerta de Seguridad Crítica (Rojo)
+% ================================================================================
+\newtcolorbox{alertbox}[1][Alerta de Seguridad]{
+    enhanced,
+    arc=5pt,
+    toprule=0.7pt,
+    bottomrule=0.7pt,
+    rightrule=0.7pt,
+    leftrule=4pt,
+    colframe=sevCritical,
+    colback=sevCritical!5,
+    top=7pt, bottom=7pt, left=10pt, right=10pt,
+    title={{\large\color{sevCritical}\faExclamationCircle}\hspace{6pt}\textbf{\color{csecDark}#1}},
+    attach title to upper={\par\vspace{4pt}{\color{sevCritical!35}\hrule height 0.5pt}\vspace{6pt}},
+    coltitle=csecDark,
+    fonttitle=\normalsize
+}
+
+% ================================================================================
+% 5. Caja de Medidas de Remediación (Verde Escudo)
+% ================================================================================
+\newtcolorbox{mitigationbox}[1][Medida de Remediación]{
+    enhanced,
+    arc=5pt,
+    toprule=0.7pt,
+    bottomrule=0.7pt,
+    rightrule=0.7pt,
+    leftrule=4pt,
+    colframe=csecGreen,
+    colback=csecGreen!5,
+    top=7pt, bottom=7pt, left=10pt, right=10pt,
+    title={{\large\color{csecGreen}\faUserShield}\hspace{6pt}\textbf{\color{csecDark}#1}},
+    attach title to upper={\par\vspace{4pt}{\color{csecGreen!35}\hrule height 0.5pt}\vspace{6pt}},
+    coltitle=csecDark,
+    fonttitle=\normalsize
+}
+
+% ================================================================================
+% 6. Caja de Conocimientos y Lecciones Aprendidas (Púrpura)
+% ================================================================================
+\newtcolorbox{learningbox}[1][Concepto / Lección Aprendida]{
+    enhanced,
+    arc=5pt,
+    toprule=0.7pt,
+    bottomrule=0.7pt,
+    rightrule=0.7pt,
+    leftrule=4pt,
+    colframe=csecPurple,
+    colback=csecPurple!5,
+    top=7pt, bottom=7pt, left=10pt, right=10pt,
+    title={{\large\color{csecPurple}\faGraduationCap}\hspace{6pt}\textbf{\color{csecDark}#1}},
+    attach title to upper={\par\vspace{4pt}{\color{csecPurple!35}\hrule height 0.5pt}\vspace{6pt}},
+    coltitle=csecDark,
+    fonttitle=\normalsize
+}
+
+% ================================================================================
+% 7. Caja de Fuentes, Libros y Bibliografía (Navy / Slate)
+% ================================================================================
+\newtcolorbox{sourcebox}[1][Fuentes de Consulta, Libros y Referencias]{
+    enhanced,
+    arc=5pt,
+    toprule=0.7pt,
+    bottomrule=0.7pt,
+    rightrule=0.7pt,
+    leftrule=4pt,
+    colframe=csecNavy,
+    colback=csecNavy!4,
+    top=7pt, bottom=7pt, left=10pt, right=10pt,
+    title={{\large\color{csecCyan}\faBookOpen}\hspace{6pt}\textbf{\color{csecDark}#1}},
+    attach title to upper={\par\vspace{4pt}{\color{csecBorder}\hrule height 0.5pt}\vspace{6pt}},
+    coltitle=csecDark,
+    fonttitle=\normalsize
+}
+
+\endinput

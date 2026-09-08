@@ -1,0 +1,640 @@
+\ProvidesPackage{cybersec}[2026/08/17 Cybersecurity Writeups and Reports Theme by errant programmer]
+
+% ================================================================================
+% Core Packages
+% ================================================================================
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[spanish,es-tabla]{babel}
+\RequirePackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\RequirePackage{inconsolata} % Monospace font for code and terminal
+
+\RequirePackage[margin=2.2cm,top=2.5cm,bottom=2.5cm]{geometry}
+\setlength{\headheight}{26pt} % Avoid fancyhdr height warnings
+
+\RequirePackage[table,xcdraw,dvipsnames]{xcolor}
+\RequirePackage{graphicx}
+\graphicspath{{figure/}{./figure/}{../figure/}{../../figure/}}
+
+\RequirePackage{fancyhdr}
+\RequirePackage{lastpage}
+\RequirePackage{tabularx}
+\RequirePackage{longtable}
+\RequirePackage{array}
+\RequirePackage{booktabs}
+\RequirePackage{colortbl}
+\RequirePackage{multirow}
+\RequirePackage{enumitem}
+\RequirePackage{tikz}
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{minted}
+\RequirePackage[most]{tcolorbox}
+\tcbuselibrary{minted,skins}
+\RequirePackage{fontawesome5}
+\RequirePackage{subfiles}
+\RequirePackage{bookmark}
+
+% ================================================================================
+% Dynamic Numbering (1, 1.1 in Standalone | 1.1, 1.1.1 in Master Book)
+% ================================================================================
+\makeatletter
+\renewcommand{\thesection}{%
+  \ifnum\value{chapter}>0 \thechapter.\fi\arabic{section}%
+}
+\renewcommand{\thesubsection}{%
+  \ifnum\value{chapter}>0 \thechapter.\fi\arabic{section}.\arabic{subsection}%
+}
+\renewcommand{\thesubsubsection}{%
+  \ifnum\value{chapter}>0 \thechapter.\fi\arabic{section}.\arabic{subsection}.\arabic{subsubsection}%
+}
+\renewcommand{\thefigure}{%
+  \ifnum\value{chapter}>0 \thechapter.\fi\arabic{figure}%
+}
+\renewcommand{\thetable}{%
+  \ifnum\value{chapter}>0 \thechapter.\fi\arabic{table}%
+}
+\renewcommand{\theequation}{%
+  \ifnum\value{chapter}>0 \thechapter.\fi\arabic{equation}%
+}
+\makeatother
+
+% ================================================================================
+% Color Palette Definitions
+% ================================================================================
+
+% Base dark & layout colors
+\definecolor{csecDark}{HTML}{0F172A}       % Deep slate dark
+\definecolor{csecNavy}{HTML}{1E293B}       % Navy card background
+\definecolor{csecBorder}{HTML}{CBD5E1}     % Border gray
+\definecolor{csecLight}{HTML}{F8FAFC}      % Ultra light gray for content boxes
+\definecolor{csecTextDark}{HTML}{0F172A}   % Dark text
+\definecolor{csecMuted}{HTML}{64748B}      % Muted gray
+
+% Accent Colors
+\definecolor{csecCyan}{HTML}{0284C7}       % Accent blue/cyan
+\definecolor{csecPurple}{HTML}{7C3AED}     % Purple
+\definecolor{csecGreen}{HTML}{059669}      % Matrix green
+\definecolor{csecOrange}{HTML}{EA580C}     % Alert orange
+\definecolor{csecRed}{HTML}{DC2626}        % Alert red
+
+% Severity Colors (CVSS standard)
+\definecolor{sevCritical}{HTML}{991B1B}    % Dark Red
+\definecolor{sevHigh}{HTML}{DC2626}        % Red-Orange
+\definecolor{sevMedium}{HTML}{D97706}      % Amber / Orange
+\definecolor{sevLow}{HTML}{2563EB}         % Blue
+\definecolor{sevInfo}{HTML}{059669}        % Teal / Green
+
+% Platform Brand Colors
+\definecolor{colHTB}{HTML}{9FEF00}         % HackTheBox Green
+\definecolor{colHTBbg}{HTML}{111923}       % HackTheBox Dark
+\definecolor{colTHM}{HTML}{EA2A38}         % TryHackMe Red
+\definecolor{colPortSwigger}{HTML}{FF6633} % PortSwigger Orange
+\definecolor{colCTF}{HTML}{6366F1}         % CTF Indigo
+
+% Terminal Colors
+\definecolor{termBg}{HTML}{0D1117}         % Terminal Background
+\definecolor{termText}{HTML}{C9D1D9}       % Terminal Text
+\definecolor{termPrompt}{HTML}{58A6FF}     % Prompt Blue
+\definecolor{termPath}{HTML}{7EE787}       % Path Green
+\definecolor{termDotRed}{HTML}{FF5F56}
+\definecolor{termDotYellow}{HTML}{FFBD2E}
+\definecolor{termDotGreen}{HTML}{27C93F}
+
+% ================================================================================
+% Hyperref Configuration
+% ================================================================================
+\RequirePackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=csecCyan,
+    filecolor=csecPurple,
+    urlcolor=csecCyan,
+    citecolor=csecGreen,
+    pdfstartview={FitH}
+}
+
+% ================================================================================
+% Dynamic Header & Footer Configuration (Fancyhdr)
+% ================================================================================
+\newcommand{\currentPlatformHeader}{{\color{csecCyan}\faUserShield}\ \textbf{CyberSecurity Knowledge Base}}
+\newcommand{\currentMachineName}{Playbook \& Writeups}
+\newcommand{\currentSolveDate}{\today}
+\newcommand{\currentAuthor}{errantprogrammer}
+
+% Setup Header and Footer dynamically
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+\renewcommand{\headrule}{\hbox to\headwidth{\color{csecBorder}\leaders\hrule height \headrulewidth\hfill}}
+\renewcommand{\footrule}{\hbox to\headwidth{\color{csecBorder}\leaders\hrule height \footrulewidth\hfill}}
+
+% Header: Left = Platform Icon + Name | Right = Current Machine / Challenge Name
+\fancyhead[L]{\small\currentPlatformHeader}
+\fancyhead[R]{\small\color{csecDark}\textbf{\currentMachineName}}
+
+% Footer: Left = Solve Date | Center = Author Alias (errantprogrammer) | Right = Page X of Y
+\fancyfoot[L]{\small\color{csecMuted}\faCalendar*\ \currentSolveDate}
+\fancyfoot[C]{\small\color{csecDark}\textbf{\currentAuthor}}
+\fancyfoot[R]{\small\color{csecDark}\textbf{\thepage\ / \pageref{LastPage}}}
+
+% Configure plain style to also display the dynamic header & footer (for chapter pages)
+\fancypagestyle{plain}{
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0.4pt}
+  \renewcommand{\footrulewidth}{0.4pt}
+  \renewcommand{\headrule}{\hbox to\headwidth{\color{csecBorder}\leaders\hrule height \headrulewidth\hfill}}
+  \renewcommand{\footrule}{\hbox to\headwidth{\color{csecBorder}\leaders\hrule height \footrulewidth\hfill}}
+  \fancyhead[L]{\small\currentPlatformHeader}
+  \fancyhead[R]{\small\color{csecDark}\textbf{\currentMachineName}}
+  \fancyfoot[L]{\small\color{csecMuted}\faCalendar*\ \currentSolveDate}
+  \fancyfoot[C]{\small\color{csecDark}\textbf{\currentAuthor}}
+  \fancyfoot[R]{\small\color{csecDark}\textbf{\thepage\ / \pageref{LastPage}}}
+}
+
+% Command to set custom icon (either image file path or FontAwesome icon), machine name, and solve date globally (\gdef)
+\newcommand{\setCustomHeader}[4][errantprogrammer]{%
+  \gdef\currentPlatformHeader{#2}%
+  \gdef\currentMachineName{#3}%
+  \gdef\currentSolveDate{#4}%
+  \gdef\currentAuthor{#1}%
+}
+
+% Helper to resolve platform icons globally across subfiles and pages (\gdef)
+\newcommand{\setPlatformHeader}[3]{%
+  \ifstrequal{#1}{HackTheBox}{%
+    \gdef\currentPlatformHeader{{\color{black}\faCube}\ \textbf{HackTheBox}}%
+  }{%
+  \ifstrequal{#1}{HTB}{%
+    \gdef\currentPlatformHeader{{\color{black}\faCube}\ \textbf{HackTheBox}}%
+  }{%
+  \ifstrequal{#1}{TryHackMe}{%
+    \gdef\currentPlatformHeader{{\color{colTHM}\faFire}\ \textbf{TryHackMe}}%
+  }{%
+  \ifstrequal{#1}{THM}{%
+    \gdef\currentPlatformHeader{{\color{colTHM}\faFire}\ \textbf{TryHackMe}}%
+  }{%
+  \ifstrequal{#1}{PortSwigger}{%
+    \gdef\currentPlatformHeader{{\color{colPortSwigger}\faGlobe}\ \textbf{PortSwigger}}%
+  }{%
+  \ifstrequal{#1}{CTF}{%
+    \gdef\currentPlatformHeader{{\color{colCTF}\faFlag}\ \textbf{CTF Challenge}}%
+  }{%
+    \gdef\currentPlatformHeader{\includegraphics[height=11pt,keepaspectratio]{#1}\ \textbf{CTF Challenge}}%
+  }}}}}}%
+  \gdef\currentMachineName{#2}%
+  \gdef\currentSolveDate{#3}%
+}
+
+% ================================================================================
+% Minted & Code Formatting Configuration
+% ================================================================================
+\setminted{
+    fontsize=\small,
+    breaklines=true,
+    breakanywhere=true,
+    autogobble=true,
+    tabsize=2
+}
+
+% ================================================================================
+% Custom Badges
+% ================================================================================
+\newcommand{\badge}[3][white]{%
+  \mbox{%
+    \begin{tikzpicture}[baseline=(X.base)]
+      \node[
+        fill=#2,
+        text=#1,
+        rounded corners=2pt,
+        inner sep=3.5pt,
+        font=\bfseries\scriptsize
+      ] (X) {#3};
+    \end{tikzpicture}%
+  }%
+}
+
+% Single tag badge
+\newcommand{\tagBadge}[1]{\badge[white]{csecPurple}{\faTag\ #1}}
+
+% Comma-separated tag list helper (renders each item as an individual pill)
+\newcommand{\tagList}[1]{%
+  \foreach \t in {#1} {%
+    \badge[white]{csecPurple}{\faTag\ \t}\hspace{2pt}%
+  }%
+}
+
+% Severity Badges
+\newcommand{\severityBadge}[1]{%
+  \ifstrequal{#1}{Critical}{\badge[white]{sevCritical}{\faBiohazard\ CRITICAL}}{%
+  \ifstrequal{#1}{High}{\badge[white]{sevHigh}{\faExclamationTriangle\ HIGH}}{%
+  \ifstrequal{#1}{Medium}{\badge[white]{sevMedium}{\faExclamationCircle\ MEDIUM}}{%
+  \ifstrequal{#1}{Low}{\badge[white]{sevLow}{\faInfoCircle\ LOW}}{%
+  \ifstrequal{#1}{Info}{\badge[white]{sevInfo}{\faCheckCircle\ INFO}}{%
+  \badge[white]{csecMuted}{#1}}}}}}%
+}
+
+% Difficulty Badges
+\newcommand{\difficultyBadge}[1]{%
+  \ifstrequal{#1}{Easy}{\badge[white]{sevInfo}{\faSmile\ EASY}}{%
+  \ifstrequal{#1}{Facil}{\badge[white]{sevInfo}{\faSmile\ FÁCIL}}{%
+  \ifstrequal{#1}{Medium}{\badge[white]{sevMedium}{\faMeh\ MEDIUM}}{%
+  \ifstrequal{#1}{Media}{\badge[white]{sevMedium}{\faMeh\ MEDIA}}{%
+  \ifstrequal{#1}{Hard}{\badge[white]{sevHigh}{\faFrown\ HARD}}{%
+  \ifstrequal{#1}{Dificil}{\badge[white]{sevHigh}{\faFrown\ DIFÍCIL}}{%
+  \ifstrequal{#1}{Insane}{\badge[white]{sevCritical}{\faSkullCrossbones\ INSANE}}{%
+  \badge[white]{csecMuted}{#1}}}}}}}}%
+}
+
+% Platform Badges (Supports standard platforms, pwn.college, custom names & image paths)
+\newcommand{\platformBadge}[1]{%
+  \ifstrequal{#1}{HackTheBox}{\badge[black]{colHTB}{\faCube\ HackTheBox}}{%
+  \ifstrequal{#1}{HTB}{\badge[black]{colHTB}{\faCube\ HackTheBox}}{%
+  \ifstrequal{#1}{TryHackMe}{\badge[white]{colTHM}{\faFire\ TryHackMe}}{%
+  \ifstrequal{#1}{THM}{\badge[white]{colTHM}{\faFire\ TryHackMe}}{%
+  \ifstrequal{#1}{PortSwigger}{\badge[white]{colPortSwigger}{\faGlobe\ PortSwigger}}{%
+  \ifstrequal{#1}{CTF}{\badge[white]{colCTF}{\faFlag\ CTF Challenge}}{%
+  \ifstrequal{#1}{pwn.college}{\badge[white]{csecPurple}{\faGraduationCap\ pwn.college}}{%
+  \ifstrequal{#1}{OverTheWire}{\badge[white]{csecNavy}{\faTerminal\ OverTheWire}}{%
+  \ifstrequal{#1}{Root-Me}{\badge[white]{csecDark}{\faSkull\ Root-Me}}{%
+    \IfFileExists{#1}{%
+      \mbox{%
+        \begin{tikzpicture}[baseline=(X.base)]
+          \node[fill=colCTF, text=white, rounded corners=2pt, inner sep=3pt, font=\bfseries\scriptsize] (X) {%
+            \includegraphics[height=8pt,keepaspectratio]{#1}\hspace{3pt}CTF Challenge%
+          };
+        \end{tikzpicture}%
+      }%
+    }{%
+      \badge[white]{csecNavy}{\faLaptopCode\ #1}%
+    }%
+  }}}}}}}}}%
+}
+
+% OS Badge
+\newcommand{\osBadge}[1]{%
+  \ifstrequal{#1}{Linux}{\badge[white]{csecDark}{\faLinux\ Linux}}{%
+  \ifstrequal{#1}{Windows}{\badge[white]{csecCyan}{\faWindows\ Windows}}{%
+  \ifstrequal{#1}{Android}{\badge[white]{csecGreen}{\faAndroid\ Android}}{%
+  \badge[white]{csecMuted}{\faServer\ #1}}}}%
+}
+
+% Source & Reference Badges (Libro, Web, Docs, Curso, Video, Paper, Lab, Writeup)
+\newcommand{\sourceBadge}[1]{%
+  \ifstrequal{#1}{Libro}{\badge[white]{csecDark}{\faBook\ Libro}}{%
+  \ifstrequal{#1}{Web}{\badge[white]{csecCyan}{\faGlobe\ Web}}{%
+  \ifstrequal{#1}{Docs}{\badge[white]{csecNavy}{\faFile*\ Docs}}{%
+  \ifstrequal{#1}{Curso}{\badge[white]{csecPurple}{\faGraduationCap\ Curso}}{%
+  \ifstrequal{#1}{Video}{\badge[white]{sevHigh}{\faVideo\ Video}}{%
+  \ifstrequal{#1}{Paper}{\badge[white]{csecMuted}{\faScroll\ Paper}}{%
+  \ifstrequal{#1}{Lab}{\badge[white]{csecGreen}{\faFlask\ Lab}}{%
+  \ifstrequal{#1}{Writeup}{\badge[white]{colHTBbg}{\color{colHTB}\faCube\ Writeup}}{%
+  \badge[white]{csecDark}{\faExternalLink*\ #1}}}}}}}}}%
+}
+
+% Structured Resource Item for Bibliography, Links, Books and Courses
+\newcommand{\resourceItem}[3]{%
+  \item \sourceBadge{#1}\ \textbf{#2}%
+  \ifblank{#3}{}{%
+    \par\vspace{1pt}\hspace*{12pt}{\footnotesize\color{csecCyan}\faLink\ #3}%
+  }%
+}
+
+% ================================================================================
+% Custom Boxes (tcolorbox & Minted Integration)
+% ================================================================================
+
+% Seamless Subfiles and Minted Integration
+\makeatletter
+\tcbset{
+  listing file=\jobname.listing
+}
+\def\tcblisting@write@path{%
+  \ifdefined\import@path\import@path\fi\kvtcb@listingfile%
+}
+\renewenvironment{tcblisting}[1]{%
+  \stepcounter{tcblisting}\edef\thetcblistingcount{\thetcblisting}%
+  \tcb@layer@pushup%
+  \tcb@apply@box@options{capture=minipage,#1}%
+  \begingroup\tcbverbatimwrite{\tcblisting@write@path}%
+}{\endtcbverbatimwrite\endgroup%
+  \tcbinputlisting@core%
+}
+\makeatother
+
+% 1. Terminal Console Box (Minted)
+\newtcblisting{terminal}[1][kali@pentest:\~{}]{
+    enhanced,
+    listing only,
+    listing engine=minted,
+    minted language=text,
+    minted options={
+        fontsize=\footnotesize,
+        breaklines,
+        autogobble,
+        formatcom=\color{termText}
+    },
+    colback=termBg,
+    boxrule=0.8pt,
+    colframe=csecNavy,
+    arc=4pt,
+    top=8pt,
+    bottom=8pt,
+    left=8pt,
+    right=8pt,
+    title={%
+      \tikz[baseline=-0.6ex]{
+        \fill[termDotRed] (0,0) circle (3pt);
+        \fill[termDotYellow] (10pt,0) circle (3pt);
+        \fill[termDotGreen] (20pt,0) circle (3pt);
+      }\hspace{10pt}\textbf{\color{termPrompt}#1}%
+    },
+    coltitle=csecLight,
+    fonttitle=\bfseries\footnotesize,
+    attach boxed title to top left={xshift=6pt, yshift=-9pt},
+    boxed title style={
+        colback=csecDark,
+        colframe=csecDark,
+        arc=3pt,
+        boxrule=0pt,
+        top=2pt, bottom=2pt, left=4pt, right=4pt
+    }
+}
+
+% 2. Code / Script Box (Minted - Clean without line numbers)
+\newtcblisting{codebox}[2][text]{
+    enhanced,
+    listing only,
+    listing engine=minted,
+    minted language=#1,
+    minted options={
+        fontsize=\footnotesize,
+        breaklines,
+        autogobble
+    },
+    colback=csecLight,
+    colframe=csecBorder,
+    boxrule=0.8pt,
+    arc=3pt,
+    title={\faCode\ \textbf{#2}},
+    coltitle=csecDark,
+    colbacktitle=csecBorder!40,
+    fonttitle=\small\bfseries,
+    attach boxed title to top left={yshift=-2mm, xshift=2mm},
+    boxed title style={boxrule=0.4pt, colframe=csecBorder, arc=2pt},
+    top=10pt, bottom=6pt, left=6pt, right=6pt
+}
+
+% 2.1 Numbered Code Box (Explicit line numbers)
+\newtcblisting{numcodebox}[2][text]{
+    enhanced,
+    listing only,
+    listing engine=minted,
+    minted language=#1,
+    minted options={
+        fontsize=\footnotesize,
+        linenos,
+        numbersep=8pt,
+        breaklines,
+        autogobble
+    },
+    colback=csecLight,
+    colframe=csecBorder,
+    boxrule=0.8pt,
+    arc=3pt,
+    title={\faCode\ \textbf{#2}},
+    coltitle=csecDark,
+    colbacktitle=csecBorder!40,
+    fonttitle=\small\bfseries,
+    attach boxed title to top left={yshift=-2mm, xshift=2mm},
+    boxed title style={boxrule=0.4pt, colframe=csecBorder, arc=2pt},
+    top=10pt, bottom=6pt, left=6pt, right=6pt
+}
+
+\newtcblisting{bashbox}[1]{
+    enhanced,
+    listing only,
+    listing engine=minted,
+    minted language=bash,
+    minted options={
+        fontsize=\footnotesize,
+        breaklines,
+        autogobble
+    },
+    colback=csecLight,
+    colframe=csecBorder,
+    boxrule=0.8pt,
+    arc=3pt,
+    title={\faTerminal\ \textbf{#1}},
+    coltitle=csecDark,
+    colbacktitle=csecBorder!40,
+    fonttitle=\small\bfseries,
+    attach boxed title to top left={yshift=-2mm, xshift=2mm},
+    boxed title style={boxrule=0.4pt, colframe=csecBorder, arc=2pt},
+    top=10pt, bottom=6pt, left=6pt, right=6pt
+}
+
+\newtcblisting{pythonbox}[1]{
+    enhanced,
+    listing only,
+    listing engine=minted,
+    minted language=python,
+    minted options={
+        fontsize=\footnotesize,
+        breaklines,
+        autogobble
+    },
+    colback=csecLight,
+    colframe=csecBorder,
+    boxrule=0.8pt,
+    arc=3pt,
+    title={\faPython\ \textbf{#1}},
+    coltitle=csecDark,
+    colbacktitle=csecBorder!40,
+    fonttitle=\small\bfseries,
+    attach boxed title to top left={yshift=-2mm, xshift=2mm},
+    boxed title style={boxrule=0.4pt, colframe=csecBorder, arc=2pt},
+    top=10pt, bottom=6pt, left=6pt, right=6pt
+}
+
+% 3. Vulnerability Box
+\newtcolorbox{vulnbox}[3][]{
+    enhanced,
+    colback=csecLight,
+    colframe=sevHigh,
+    boxrule=1pt,
+    arc=3pt,
+    title={\faBug\ \textbf{Vulnerabilidad: #2} \hfill \severityBadge{#3}},
+    coltitle=white,
+    colbacktitle=sevHigh,
+    fonttitle=\bfseries\small,
+    top=8pt, bottom=8pt, left=10pt, right=10pt
+}
+
+% 4. Flag Box (Minted engine - displays unescaped raw flags cleanly)
+\newtcblisting{flagbox}[2][CAPTURADA]{
+    enhanced,
+    listing only,
+    listing engine=minted,
+    minted language=text,
+    minted options={
+        fontsize=\small,
+        breaklines,
+        autogobble,
+        formatcom=\color{colHTB}
+    },
+    colback=csecDark,
+    boxrule=1pt,
+    colframe=colHTB,
+    arc=3pt,
+    title={\color{white}\faFlag\ \textbf{#2} \hfill \color{colHTB}\faCheckCircle\ \textsf{\scriptsize #1}},
+    coltitle=white,
+    colbacktitle=csecNavy,
+    fonttitle=\small\bfseries,
+    top=8pt, bottom=8pt, left=10pt, right=10pt
+}
+
+% ================================================================================
+% 5. Callouts, Notes & Alert Boxes (Modular Package: style/callouts.sty)
+% ================================================================================
+\RequirePackage{style/callouts}
+
+% ================================================================================
+% Auto-Generated Progress Dashboard Mechanism
+% ================================================================================
+\newwrite\targetStream
+\newif\iftargetStreamOpen\targetStreamOpenfalse
+
+\newcommand{\registerDashboard}[5]{%
+  \iftargetStreamOpen
+    \immediate\write\targetStream{\string\dashboardRow{#1}{#2}{#3}{#4}{#5}}%
+  \fi
+}
+
+\newcommand{\dashboardRow}[5]{%
+  \hyperlink{target:#1}{\textbf{\color{csecDark}#1}\ \scriptsize\color{csecCyan}\faExternalLink*} & \osBadge{#2} & \platformBadge{#3} & \difficultyBadge{#4} & \mbox{\badge[white]{csecGreen}{\faCheck\ PWNED}} & {\footnotesize #5} \tabularnewline \midrule
+}
+
+\newcommand{\renderDashboard}{%
+  \IfFileExists{\jobname.targets}{%
+    \begin{longtable}{@{} p{3.2cm} p{2.2cm} p{2.8cm} c c p{4.2cm} @{}}
+      \toprule
+      \rowcolor{csecDark}
+      \textbf{\color{white}Objetivo} & 
+      \textbf{\color{white}S.O.} & 
+      \textbf{\color{white}Plataforma} & 
+      \textbf{\color{white}Dificultad} & 
+      \textbf{\color{white}Estado} & 
+      \textbf{\color{white}Tags / Categorías} \tabularnewline
+      \midrule
+      \endfirsthead
+      \toprule
+      \rowcolor{csecDark}
+      \textbf{\color{white}Objetivo} & 
+      \textbf{\color{white}S.O.} & 
+      \textbf{\color{white}Plataforma} & 
+      \textbf{\color{white}Dificultad} & 
+      \textbf{\color{white}Estado} & 
+      \textbf{\color{white}Tags / Categorías} \tabularnewline
+      \midrule
+      \endhead
+      \bottomrule
+      \endfoot
+      \input{\jobname.targets}
+    \end{longtable}%
+  }{%
+    \begin{center}
+      \small\color{csecDark}\faSync*\ \textit{El registro de objetivos se generará automáticamente tras compilar los writeups.}
+    \end{center}
+  }%
+  \immediate\openout\targetStream=\jobname.targets\relax
+  \targetStreamOpentrue
+}
+
+\AtEndDocument{%
+  \iftargetStreamOpen
+    \immediate\closeout\targetStream
+  \fi
+}
+
+% ================================================================================
+% Target Card / Summary Box (Supports multiple tags & long full-width flags)
+% ================================================================================
+\newcommand{\targetSummary}[9]{%
+  % Anchor for direct hyperlink jumping from Dashboard
+  \phantomsection\hypertarget{target:#1}{}%
+  % Automatically update header & footer with machine metadata globally
+  \setPlatformHeader{#3}{#1}{#7}%
+  % Automatically register target metadata into the master dashboard stream (Name, OS, Platform, Difficulty, Tags)
+  \registerDashboard{#1}{#5}{#3}{#4}{#6}%
+  \begin{tcolorbox}[
+    enhanced,
+    colback=csecDark,
+    colframe=csecDark,
+    boxrule=0pt,
+    arc=5pt,
+    top=10pt, bottom=10pt, left=12pt, right=12pt
+  ]
+    \begin{minipage}[c]{0.50\textwidth}
+      {\LARGE \textbf{\color{white}#1}} \\[3pt]
+      {\small \color{csecBorder}\faNetworkWired\ IP / Host:} {\textbf{\color{csecCyan}#2}} \\[2pt]
+      {\small \color{csecBorder}\faCalendar*\ Fecha:} {\color{white}#7}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[c]{0.48\textwidth}
+      \flushright
+      \platformBadge{#3} \hspace{2pt} \difficultyBadge{#4} \\[4pt]
+      \osBadge{#5} \hspace{2pt} \tagList{#6}
+    \end{minipage}
+    
+    \vspace{6pt}
+    \hrule height 0.5pt \color{csecNavy}
+    \vspace{6pt}
+    
+    % Long Flags Section: Full width rows with auto-wrapping monospace
+    \ifblank{#9}{%
+      % Only one flag provided (e.g. Web lab / CTF challenge)
+      \begin{tabularx}{\textwidth}{@{}l X@{}}
+        \color{csecBorder}\faFlag\ \textbf{Flag / Hash:} & {\small\color{colHTB}\texttt{\detokenize{#8}}}
+      \end{tabularx}
+    }{%
+      % User & Root flags provided
+      \begin{tabularx}{\textwidth}{@{}l X@{}}
+        \color{csecBorder}\faUserSecret\ \textbf{User Flag:} & {\small\color{colHTB}\texttt{\detokenize{#8}}} \\[3pt]
+        \color{csecBorder}\faCrown\ \textbf{Root Flag:} & {\small\color{colHTB}\texttt{\detokenize{#9}}}
+      \end{tabularx}
+    }
+  \end{tcolorbox}%
+}
+
+% Helper for single-report cover
+\newcommand{\singleReportCover}[5]{
+  \begin{titlepage}
+    \begin{tcolorbox}[enhanced, colback=csecDark, colframe=csecDark, arc=0pt, height=\textheight, width=\textwidth, valign=center]
+      \centering
+      \vspace{2cm}
+      {\Huge \textbf{\color{white} REPORTE DE CIBERSEGURIDAD}}\\[0.4cm]
+      {\large \color{csecCyan}\textbf{#1}}\\[1.5cm]
+      
+      \begin{tcolorbox}[colback=csecNavy, colframe=csecBorder!30, width=0.85\textwidth, arc=4pt]
+        \centering
+        \vspace{4pt}
+        {\Large \textbf{\color{white} #2}}\\[6pt]
+        \platformBadge{#3} \quad \difficultyBadge{#4}\\[8pt]
+        \color{csecBorder} Fecha de Ejecución: \textbf{\color{white}#5}
+        \vspace{4pt}
+      \end{tcolorbox}
+      
+      \vfill
+      
+      {\small \color{csecMuted} Autor / Auditor:}\\[2pt]
+      {\large \textbf{\color{white} errantprogrammer}}\\[1cm]
+      
+      {\scriptsize \color{csecMuted} Documento técnico confidencial y con fines educativos y de auditoría.}
+      \vspace{1cm}
+    \end{tcolorbox}
+  \end{titlepage}
+}
+
+\endinput

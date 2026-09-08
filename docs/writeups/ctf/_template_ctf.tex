@@ -1,0 +1,82 @@
+% !TeX program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+
+\documentclass[../../../main_compilation.tex]{subfiles}
+
+\begin{document}
+
+% ================================================================================
+% Encabezado del Reto CTF
+% ================================================================================
+% Nota: Si tienes un logotipo o imagen específica para este CTF, puedes definirlo con:
+% \setCustomHeader{figure/logo_ctf.png}{NOMBRE_RETO}{\today}
+% O usar el icono por defecto de CTF a través de \targetSummary:
+
+\section[CTF - NOMBRE\_RETO (Evento)]{NOMBRE\_RETO — Evento CTF}
+\label{sec:ctf-nombre-reto}
+
+\targetSummary%
+  {NOMBRE\_RETO}% Nombre del reto (Aparece en la cabecera derecha)
+  {challenge.ctf.io:1337}% Host o archivo adjunto
+  {CTF}% Plataforma / Ícono (CTF, HackTheBox, TryHackMe, o ruta de imagen 'figure/logo.png')
+  {Medium}% Dificultad: Easy, Medium, Hard, Insane
+  {Binary / Web / Crypto / Reversing}% Categoría
+  {Puntos: 500}% Puntos o Tags
+  {\today}% Fecha de resolución manual (Aparece en el pie de página izquierdo)
+  {Solucionado}% Estado
+  {flag\{...root\_flag...\}}% Flag
+
+\vspace{0.4cm}
+
+% ================================================================================
+% 1. Enunciado del Reto
+% ================================================================================
+\subsection{Enunciado y Archivos Provistos}
+Descripción del reto dada por los organizadores del CTF y lista de archivos entregados (binario, volcado de memoria, captura \texttt{.pcap}, script, etc.).
+
+% ================================================================================
+% 2. Análisis y Solución (Solver Script)
+% ================================================================================
+\subsection{Análisis \& Desarrollo del Exploit / Solver}
+
+\begin{terminal}[kali@pentest:\~{}]
+# Comandos de análisis estático / dinámico (GDB, Ghidra, Volatility, Wireshark, etc.)
+checksec --file=vuln_binary
+file vuln_binary
+\end{terminal}
+
+\begin{codebox}[Python]{solve.py}
+from pwn import *
+
+# Solver script automatizado
+# context.log_level = 'debug'
+# io = remote('challenge.ctf.io', 1337)
+# io.sendline(...)
+# print(io.recvall().decode())
+\end{codebox}
+
+\begin{flagbox}{CTF Flag}
+flag{c0ngr4ts_y0u_s0lv3d_th1s_ch4ll3ng3}
+\end{flagbox}
+
+% ================================================================================
+% 3. Conceptos y Técnicas Aprendidas
+% ================================================================================
+\subsection{Conocimientos y Técnicas Aprendidas}
+
+\begin{learningbox}[Lecciones del Reto CTF]
+	\begin{itemize}[leftmargin=*]
+		\item \textbf{Técnica / Concepto Pwn/Crypto/Reversing:} Mecanismo matemático o vulnerabilidad explotada.
+		\item \textbf{Herramienta / Biblioteca Clave:} Librerías (e.g. \texttt{pwntools}, \texttt{z3}, \texttt{angr}, Ghidra, GDB-gef).
+	\end{itemize}
+\end{learningbox}
+
+\begin{sourcebox}[Fuentes y Referencias del Desafío]
+	\begin{itemize}[leftmargin=*]
+		\resourceItem{Web}{CTFtime / Writeups Oficiales}{\url{https://ctftime.org}}
+		\resourceItem{Docs}{Documentación de Herramientas (pwntools / GEF)}{\url{https://docs.pwntools.com}}
+	\end{itemize}
+\end{sourcebox}
+
+\end{document}

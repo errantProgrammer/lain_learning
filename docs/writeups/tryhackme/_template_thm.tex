@@ -1,0 +1,94 @@
+% !TeX program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+
+\documentclass[../../../main_compilation.tex]{subfiles}
+
+\begin{document}
+
+% ================================================================================
+% Encabezado / Ficha de la Sala TryHackMe
+% ================================================================================
+\section[THM - NOMBRE\_SALA (10.10.X.X)]{NOMBRE\_SALA — TryHackMe}
+\label{sec:thm-nombre-sala}
+
+\targetSummary%
+{NOMBRE\_SALA}% Nombre de la sala
+{10.10.X.X}% IP
+{TryHackMe}% Plataforma
+{Medium}% Dificultad: Easy, Medium, Hard, Insane
+{Linux}% Sistema Operativo: Linux, Windows, Active Directory
+{Web / PrivEsc / Forensics}% Categoría o Tags clave
+{\today}% Fecha de resolución
+{thm\{user\_flag\}}% User Flag
+{thm\{root\_flag\}}% Root Flag
+
+\vspace{0.4cm}
+
+% ================================================================================
+% 1. Descripción de la Sala
+% ================================================================================
+\subsection{Descripción del Reto}
+Objetivos de la sala de TryHackMe y conceptos evaluados (ej. Active Directory, Web Application Security, Network Security, etc.).
+
+\begin{vulnbox}{Vulnerabilidad / Vector Principal}{High}
+	\textbf{Tipo:} Desconfiguración / Inyección / CVE-XXXX \hfill \textbf{Severidad:} High\\
+	\textbf{Descripción:} Resumen del fallo explotado durante la sala.
+\end{vulnbox}
+
+% ================================================================================
+% 2. Tareas y Pasos de Resolución
+% ================================================================================
+\subsection{Reconocimiento \& Tareas Iniciales}
+
+\begin{terminal}[kali@pentest:\~{}]
+	nmap -sC -sV -Pn 10.10.X.X -oN nmap_thm.txt
+\end{terminal}
+
+\subsection{Explotación y Acceso}
+
+\begin{terminal}[kali@pentest:\~{}]
+	# Comandos de explotación o payloads ejecutados
+\end{terminal}
+
+\subsection{Escalada de Privilegios}
+
+\begin{terminal}[user@target:\~{}]
+	# Procedimiento para obtener root / SYSTEM
+\end{terminal}
+
+\begin{flagbox}{User Flag}
+	thm{user_flag_aqui}
+\end{flagbox}
+
+\begin{flagbox}{Root Flag}
+	thm{root_flag_aqui}
+\end{flagbox}
+
+% ================================================================================
+% 3. Conceptos Aprendidos y Mitigaciones
+% ================================================================================
+\subsection{Lecciones Aprendidas \& Mitigación}
+
+\begin{mitigationbox}[Buenas Prácticas]
+	\begin{itemize}[leftmargin=*]
+		\item Medidas recomendadas para evitar esta vulnerabilidad en producción.
+		\item Endurecimiento y principios de mínimo privilegio aplicables.
+	\end{itemize}
+\end{mitigationbox}
+
+\begin{learningbox}[Conocimientos Técnicos Adquiridos]
+	\begin{itemize}[leftmargin=*]
+		\item \textbf{Concepto Clave:} Técnica o vector principal practicado en la sala.
+		\item \textbf{Táctica / Herramienta:} Uso de utilidades específicas o comandos de enumeración.
+	\end{itemize}
+\end{learningbox}
+
+\begin{sourcebox}[Fuentes de Referencia \& Documentación]
+	\begin{itemize}[leftmargin=*]
+		\resourceItem{Docs}{Documentación de la Sala (THM)}{Enlace o manual de la sala}
+		\resourceItem{Web}{Recurso / Cheatsheet de Apoyo}{\url{https://...}}
+	\end{itemize}
+\end{sourcebox}
+
+\end{document}

