@@ -1,0 +1,91 @@
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+\section{Control Flow}\label{sec:control_flow}
+
+\subsection{Video - Registers}\label{subsec:video_registers}
+
+\subsection{Video - Control Flow}\label{subsec:video_control_flow}
+
+\subsection{Comparing Values} \label{subsec:comparing_values}
+
+Para poder realizar las comparaciones, se utiliza la instrucción \textbf{\textit{cmp}},
+este compara 2 valores restando el segundo operando del primero.
+El valor de dicha resta, no se almacena en ningún lugar al que se pueda
+acceder directamente, este actualiza las \textbf{\textit{flag}} internas de la CPU.
+
+\begin{codebox}[ASM]{Ejemplo}
+	cmp rdi, 42             ; Se comprar un valor inmediato
+	cmp QWORD PTR [rsp], 42 ; tambien se puede comparar direcciones de memoria
+\end{codebox}
+
+Esto de aquí, calcula internamente \( rdi - 42 \) y la CPU estable un bit
+especial llamado \textbf{\textit{Zero Flag(ZF)}}, en caso de que la resta
+sea \( 0 \) el valor de \textbf{\textit{ZF}} es \( 1 \), caso contrario va a tomar el valor de \( 0 \).
+
+Con lo anteriormente mencionado x86 nos proporciona una familia de instrucciones
+que escriben \( 0 \) o \( 1 \) en un destino de 1 byte.
+
+\begin{codebox}[ASM]{}
+	setz dil
+\end{codebox}
+
+Esto comprueba el valor de  \textbf{\textit{ZF}}, y lo escribe en \textbf{\textit{dil}}.
+Y a su vez, \textbf{\textit{setnz(Set if Not Zero)}} que hace lo contrario.
+
+Recordar que \textbf{\textit{dil}} son los primeros \( 8 \) bits menos significativos
+del registro \textbf{\textit{rdi}}.
+\begin{codebox}[ASM]{Solución del Problema}
+	.intel_syntax noprefix
+	cmp QWORD PTR [rsp], 42
+	setz dil
+	mov rax, 60
+	syscall
+\end{codebox}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{s9M8ey0NvS8aym8WgNaOwwTzosR.01M0czMywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Comparing Characters} \label{subsec:comparing_characters}
+
+En el módulo de Stack, se vio que \mintinline{ASM}{[rsp + 16]}
+es un puntero al primero valor
+pasado como parámetro \textbf{\textit{argv[1]}}. Y como vimos en el capitulo anterior \ref{sec:output_and_input}
+podemos solo utilizar el valor de un solo byte (\mintinline{ASM}{BYTE PTR [rax]}), y con esto podemos realizar
+comparaciones de un solo caracter.
+
+\begin{codebox}[ASM]{Solución}
+	.intel_syntax noprefix
+	mov rax, [rsp + 16]
+	cmp BYTE PTR [rax], 'p'
+	setz dil
+	mov rax, 60
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{EK0Xt5rxYiy5yQWdKCGSVY3dSbL.0FN0czMywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Conditional Control Flow } \label{subsec:conditional_control_flow}
+
+\subsection{Comparing  Strings} \label{subsec:comparing_strings}
+
+\subsection{Reverse the Password} \label{subsec:reverse_the_password}
+
+\subsection{Conditionals Without Conditionals} \label{subsec:conditionals_without_conditionals}
+
+\subsection{Recognizing Loops} \label{subsec:recognizing_loops}
+
+\subsection{Writing Loops} \label{subsec:writing_loops}
+
+\subsection{Writing From a Shared Library} \label{subsec:writing_from_a_shared_library}
+
+\subsection{Returning a Value} \label{subsec:returning_a_value}
+
+\subsection{Calling Through a Pointer} \label{subsec:calling_through_a_pointer}
+
+\subsection{Calling Through a Pointer with an Argument} \label{subsec:calling_through_a_pointer_with_an_argument}
+
+\subsection{Saving Caller - Saved Registers} \label{subsec:saving_caller_saved_registers}
+
+\subsection{Saving Callee - Saved Registers} \label{subsec:saving_callee_saved_registers}
