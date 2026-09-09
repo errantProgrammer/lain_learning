@@ -3,6 +3,7 @@
 
 ### LaTeX ###
 ## Core latex/pdflatex auxiliary files:
+*.targets
 *.aux
 *.lof
 *.log
