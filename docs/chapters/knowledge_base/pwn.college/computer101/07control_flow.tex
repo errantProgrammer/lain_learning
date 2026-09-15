@@ -68,11 +68,156 @@ comparaciones de un solo caracter.
 
 \subsection{Conditional Control Flow } \label{subsec:conditional_control_flow}
 
+Con el resultado anterior, se le puede indicar a la CPU que salte a otra parte
+del código.
+
+Estos se ejecutan después de la instrucción \mintinline{ASM}{cmp}, si quiere
+revisar todos los \href{https://www.felixcloutier.com/x86/jcc}{saltos condicionales}.
+
+Aquí una tabla resumen:
+
+\begin{table}[htpb]
+	\centering
+	\renewcommand{\arraystretch}{1.2}
+	\begin{tabular}{|l|l|l|l|l|}
+		\hline
+		\textbf{Instrucción}        & \textbf{Mnemónico / Significado} & \textbf{Condición lógica}      & \textbf{Banderas evaluadas}             \\ \hline
+		\texttt{jmp}                & Jump                             & Incondicional                  & Ninguna (salta siempre)                 \\ \hline
+		\texttt{je} / \texttt{jz}   & Jump if Equal / Zero             & $A == B$ o resultado cero      & \texttt{ZF = 1}                         \\ \hline
+		\texttt{jne} / \texttt{jnz} & Jump if Not Equal / Not Zero     & $A \neq B$ o resultado no cero & \texttt{ZF = 0}                         \\ \hline
+		\texttt{jg} / \texttt{jnle} & Jump if Greater                  & $A > B$ (con signo)            & \texttt{ZF = 0} y \texttt{SF = OF}      \\ \hline
+		\texttt{jge} / \texttt{jnl} & Jump if Greater or Equal         & $A \ge B$ (con signo)          & \texttt{SF = OF}                        \\ \hline
+		\texttt{jl} / \texttt{jnge} & Jump if Less                     & $A < B$ (con signo)            & \texttt{SF $\neq$ OF}                   \\ \hline
+		\texttt{jle} / \texttt{jng} & Jump if Less or Equal            & $A \le B$ (con signo)          & \texttt{ZF = 1} o \texttt{SF $\neq$ OF} \\ \hline
+		\texttt{ja} / \texttt{jnbe} & Jump if Above                    & $A > B$ (sin signo)            & \texttt{CF = 0} y \texttt{ZF = 0}       \\ \hline
+		\texttt{jae} / \texttt{jnb} & Jump if Above or Equal           & $A \ge B$ (sin signo)          & \texttt{CF = 0}                         \\ \hline
+		\texttt{jb} / \texttt{jc}   & Jump if Below / Carry            & $A < B$ (sin signo) / Acarreo  & \texttt{CF = 1}                         \\ \hline
+		\texttt{jbe} / \texttt{jna} & Jump if Below or Equal           & $A \le B$ (sin signo)          & \texttt{CF = 1} o \texttt{ZF = 1}       \\ \hline
+		\texttt{js}                 & Jump if Sign                     & Resultado negativo             & \texttt{SF = 1}                         \\ \hline
+		\texttt{jns}                & Jump if Not Sign                 & Resultado positivo o cero      & \texttt{SF = 0}                         \\ \hline
+		\texttt{jo}                 & Jump if Overflow                 & Desbordamiento con signo       & \texttt{OF = 1}                         \\ \hline
+		\texttt{jno}                & Jump if Not Overflow             & Sin desbord. con signo         & \texttt{OF = 0}                         \\ \hline
+	\end{tabular}
+	\caption{ Algunos saltos en ensamblador x86-64}
+	\label{tab:saltos_asm}
+\end{table}
+
+\begin{codebox}[ASM]{}
+	cmp BYTE PTR [rax], 'p'
+	jne fail
+\end{codebox}
+
+\textbf{\textit{fail}} es una \textbf{label}, estas no son una instrucción de máquina, sino como indicador para que el CPU
+sepa a que parte tiene que saltar para continuar con la ejecución.
+
+\begin{codebox}[ASM]{}
+	fail:
+	mov rdi, 1
+	mov rax, 60
+	syscall
+\end{codebox}
+
+En caso de que no se origine el salto, va a continuar con la ejecución normal.
+
+\begin{codebox}[ASM]{Ejemplo de uso}
+	main:
+	[load and compare]
+	jne fail          ←;jump to fail if NOT equal
+
+	success:
+	mov rdi, 0
+	mov rax, 60
+	syscall
+
+	fail:
+	mov rdi, 1
+	mov rax, 60
+	syscall
+\end{codebox}
+
+\begin{codebox}[ASM]{Solución del problema}
+	.intel_syntax noprefix
+	mov rax, [rsp + 16]
+	cmp BYTE PTR [rax], 'p'
+	jne fail
+
+	mov rdi,0
+	mov rax, 60
+	syscall
+
+	fail:
+	mov rdi,1
+	mov rax,60
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{QZ9khdqQojrEPg_83_78vJ54Ecc.0VN0czMywSMycjN4EzW}
+\end{flagbox}
+
+
 \subsection{Comparing  Strings} \label{subsec:comparing_strings}
+
+Para poder comparar string, se tiene que comparar letra por letra:
+\begin{codebox}[ASM]{}
+	mov rax, [rsp + 16]
+
+	cmp BYTE PTR [rax], 'Y'
+	jne fail
+
+	cmp BYTE PTR [rax+1], 'E'
+	jne fail
+
+	cmp BYTE PTR [rax+2], 'S'
+	jne fail
+\end{codebox}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{w_w8UjT_9EaU1ildN9bT0-Y5gF9.0lN0czMywSMycjN4EzW}
+\end{flagbox}
 
 \subsection{Reverse the Password} \label{subsec:reverse_the_password}
 
+Este desafio busca recordar los temas anteriores, como el \mintinline{bash}{objdump}, y lo que hemos visto
+anteriormennte para la comparación de caracteres y el poder leer código en \textbf{\textit{ASM}}.
+
+\begin{infobox}[Consideraciones]
+	Al momento de realizar comparaciones, tambien se puede hacer con el valor en hexadecimal su valor en ASCII a comparar
+
+	\begin{codebox}[ASM]{Comparacion con valor en hexadecimal}
+		cmp BYTE PTR [rax], 0x70 ; 0x70 = 112 = 'p'
+	\end{codebox}
+\end{infobox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{wNjWDbSIItWSvndFqwZshHkx8O-.01N0czMywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Conditionals Without Conditionals} \label{subsec:conditionals_without_conditionals}
+
+Para poder realizar una serie de condicionales, se suele trabajar con una \textbf{\textit{jump table}}
+en vez de tener una secuencia de condicionales, una detrás de otra.
+
+Si desamblamos un programa vamos a ver algo así:
+
+\begin{codebox}[ASM]{}
+	mov    rax, 0                    ; zero out rax
+	mov    al, BYTE PTR [rcx]        ; load the character into the low byte of rax
+	mov    rax, [rax*8+0x1234000]    ; load a stored address from the jump table at 0x1234000
+	jmp    rax                       ; jump to it
+\end{codebox}
+
+En este caso, el valor de \textbf{0x1234000}, representa la dirección donde se encuentra la
+tabla de saltos.
+
+En este problema, nos piden:
+\begin{enumerate}
+	\item Encontrar la dirección de la tabla de saltos, con \mintinline{bash}{objdump}
+	\item Con el GDB detectar cual es la dirección correcta a la que tiene que saltar para que salga existosamente.
+	\item calcular el valor correcto, con la siguiente formula \( \text{Índice} = \frac{\text{Dirección Slot}-\text{Dirección Base}}{8} \)
+\end{enumerate}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{QuJcHz6h6ZmYjOh93E_-XKn_J3b.0FO0czMywSMycjN4EzW}
+\end{flagbox}
 
 \subsection{Recognizing Loops} \label{subsec:recognizing_loops}
 
