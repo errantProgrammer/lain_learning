@@ -221,9 +221,75 @@ En este problema, nos piden:
 
 \subsection{Recognizing Loops} \label{subsec:recognizing_loops}
 
+Un blucle(\textit{loop}) es una secuencia de instrucciones que vuelve atrás para repetirse.
+
+\begin{codebox}[ASM]{Ejemplo de un bucle}
+	loop:
+	mov    al, BYTE PTR [rsi]       ; load next password character
+	cmp    al, BYTE PTR [rdi]       ; compare against next argv[1] character
+	jne    fail                     ; mismatch → jump to fail
+	cmp    al, 0x0                  ; reached the null terminator?
+	je     success                  ; yes → all characters matched!
+	inc    rdi                      ; **inc**rement rdi to advance to next argv[1] character
+	inc    rsi                      ; **inc**rement rsi to advance to next password character
+	jmp    loop                     ; jump back to the top — repeat!
+\end{codebox}
+
+En este caso, la instrucción de nuestro interés es la de \mintinline{asm}{jmp}, puesto que
+este siempre va a saltar de forma incondicional.
+
+Y el bucle terminará cuando se cumpla alguna de las condiciones.
+
+En este problema, nos piden:
+\begin{enumerate}
+	\item Detectar en que parte se encuentra el bucle con \mintinline{bash}{objdump}.
+	\item Detectar donde se esta almacenando la contraseña.
+	\item Traducir la contraseña escrita en formato hexadecimal, a codigo ASCII cada caracter.
+\end{enumerate}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{0Ae7WQpSJ7pA143bEe4QwhsamaT.0VO0czMywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Writing Loops} \label{subsec:writing_loops}
 
+Todo bucle necesita 3 elementos:
+
+\begin{enumerate}
+	\item Donde se encuentra actualmente.
+	\item Cuánto se ha avanzando.
+	\item Cuál es la condición de salida.
+\end{enumerate}
+\begin{codebox}[ASM]{}
+	.intel_syntax noprefix
+	mov rsi, [rsp + 16]
+	xor rdi, rdi
+	loop:
+	mov al, BYTE PTR [rsi]
+	cmp al,0x0
+	je sucess
+	inc rsi
+	inc rdi
+	jmp loop
+
+	sucess:
+	mov rax, 60
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kGPHs9T6Bo2idpKHvjEQsY42zj9.0lNyQTNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Writing From a Shared Library} \label{subsec:writing_from_a_shared_library}
+
+Lo que hemos realizado hasta ahorita son códigos que inician en
+\mintinline{ASM}{_start}, se ejecutan desde ahí y finalizan con una llamada al
+sistema.
+
+Una biblioteca compartida, será un fragmento de código compilado que otro programa
+carga en tiempo de ejecución y al que recurre. Siendo las bibliotecas una interfaz
+más cómoda para interactuar, que las llamadas al sistema.
 
 \subsection{Returning a Value} \label{subsec:returning_a_value}
 
@@ -234,3 +300,4 @@ En este problema, nos piden:
 \subsection{Saving Caller - Saved Registers} \label{subsec:saving_caller_saved_registers}
 
 \subsection{Saving Callee - Saved Registers} \label{subsec:saving_callee_saved_registers}
+
