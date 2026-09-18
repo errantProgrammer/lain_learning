@@ -472,8 +472,6 @@ Ya has practicado con los registros guardados por el llamante y ahora veremos lo
 
 La regla es: cuando tu función quiera utilizar estos registros, guárdalos (push) al entrar en tu función y restáuralos (pop) antes de llamar a ret.
 
-Este nivel te sitúa en el lado del llamado. Tu función «solve» se invoca como «solve(check_callee_clobbered)» (el puntero está en rdi), y tu llamante tiene valores activos en rbx, rbp, r12, r13, r14 y r15 que espera recuperar sin que se hayan modificado.
-
 \begin{codebox}[ASM]{Solución}
 	.intel_syntax noprefix
 	.global solve
@@ -502,6 +500,7 @@ Este nivel te sitúa en el lado del llamado. Tu función «solve» se invoca com
 	pop rbx
 	ret
 \end{codebox}
+
 \begin{flagbox}{Flag Capturada}
 	pwn.college{UlHPPFUtUyQeov-6iT9TeCx0MLT.0VM4kDNywSMycjN4EzW}
 \end{flagbox}
