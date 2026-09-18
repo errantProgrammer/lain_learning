@@ -289,15 +289,220 @@ sistema.
 
 Una biblioteca compartida, será un fragmento de código compilado que otro programa
 carga en tiempo de ejecución y al que recurre. Siendo las bibliotecas una interfaz
-más cómoda para interactuar, que las llamadas al sistema.
+más cómoda para interactuar.
+
+Para poder acceder al código de la librería, vamos a utilizar la instrucción
+\mintinline{ASM}{call <target>}, esta instrucción empuja a la pila la dirección de la
+siguiente instrucción tras la instrucción call, para que sirva de dirección de retorno
+y saltamos a \mintinline{ASM}{<target>}.
+
+\begin{codebox}[ASM]{}
+	.intel_syntax nonprefix
+	.global solve
+	solve:
+	<your code, ending in an exit syscall>
+\end{codebox}
+
+La línea \mintinline{ASM}{.global solve}, va a exponer nuestro código para
+que otros programas puedan utilizar dicha función.
+
+Ahora para poder compilar nuestra biblioteca compartida, se va a usar la bandera
+\mintinline{bash}{-shared}, con el comando \mintinline{bash}{ld}, de la siguiente forma:
+
+\begin{codebox}[ASM]{}
+	as -o your-solve.o your-solve.s
+	ld -shared -o your-solve.so your-solve.o
+\end{codebox}
+
+Ahora para poder pasar los parámetros a la función, se tiene que seguir
+las convenciones de llamada(\textbf{\textit{calling convention}}).
+
+\begin{table}[htpb]
+	\begin{center}
+		\begin{tabular}[c]{l|l}
+			\hline
+			\multicolumn{1}{c|}{\textbf{Registo}} &
+			\multicolumn{1}{c}{\textbf{Función al incorporarse}}                        \\
+			\hline
+			rdi                                   & Primer argumento                    \\
+			rsi                                   & Segundo argumento                   \\
+			rdx                                   & Tercer argumento                    \\
+			rcx                                   & Cuarto argumento                    \\
+			r8                                    & Quinto argumento                    \\
+			r9                                    & Sexto argumento                     \\
+			\textbf{stack}                        & Empuja los demás valores a la pila. \\
+
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{ Calling conventions en asm x86  }\label{tab:calling_convention_x86}
+\end{table}
+
+\begin{codebox}[ASM]{Solución}
+	.intel_syntax noprefix
+	.global solve
+
+	solve:
+	mov rdx, rsi
+	mov rsi, rdi
+	mov rdi, 1
+	mov rax, 1
+	syscall
+
+	mov rdi, 0
+	mov rax, 60
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{czNSI3Wb6ITRsHns0b4elyvyfC4.0FN1kDNywSMycjN4EzW}
+\end{flagbox}
 
 \subsection{Returning a Value} \label{subsec:returning_a_value}
 
+En la sección anterior \ref{subsec:writing_from_a_shared_library},
+terminamos la función llamando al sistema de \mintinline{ASM}{exit}.
+
+Al realizar esto de aquí, termina nuestro programa, pero no regresa el control a quien hizo la llamada,
+para que se pueda realizar eso de ahí, se hace uso de la llamada al sistema \mintinline{ASM}{ret}.
+
+En la convención de llamada de Linux x86-64, el valor de retorno se almacena en \mintinline{ASM}{rax}.
+\begin{codebox}[ASM]{Solución}
+	.intel_syntax noprefix
+	.global solve
+
+	solve:
+	mov rax, rdi
+	ret
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{YN5HsO6b9fLKQ2xnlOQ3Xuhap7L.0VN1kDNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Calling Through a Pointer} \label{subsec:calling_through_a_pointer}
 
+Para este caso, se esta pasando la ubicación de la función a llamar, en el registro
+\mintinline{ASM}{rdi}, y dicha ubicación es un valor de 64 bits que nos indica la
+ubicación de un framgento de código en la memoria.
+
+\begin{codebox}[ASM]{}
+	.intel_syntax noprefix
+	.global solve
+	solve:
+	call rdi
+	ret
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{sOlh7rNWQ3zTmxtLr38hoQqTUtR.0lN1kDNywSMycjN4EzW}
+\end{flagbox}
 \subsection{Calling Through a Pointer with an Argument} \label{subsec:calling_through_a_pointer_with_an_argument}
+En este desafio, el valor de \mintinline{ASM}{rdi}, contiene el valor
+de la función, y a la vez si queremos pasar un valor a la función, este va a seguir
+el las convenciones de llamada.
+
+\begin{codebox}[ASM]{}
+	.intel_syntax noprefix
+	.global solve
+	solve:
+	mov rax, rdi
+	mov rdi, 1337
+	call rax
+	ret
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{MLa5ffWiEMfwwHnZtH81on1VqGd.01N1kDNywSMycjN4EzW}
+\end{flagbox}
 
 \subsection{Saving Caller - Saved Registers} \label{subsec:saving_caller_saved_registers}
 
+En la arquitectura x86-64, todos los programas comparten los mismo 16 registros
+por lo que la convención a llamada, establecen reglas estrictas sobre quién es
+responsable de preservar los datos al invocar la función.
+
+\begin{itemize}
+	\item \textbf{Caller:} Los registros \mintinline{ASM}{rax, rcx, rdx, rsi, rdi, r8, r9, r10, r11}
+	      se van a poder perder cuando se haga el llamado a la función, por eso mismo se tienen
+	      que guardar primero y restaurarlo después.
+
+	\item \textbf{Callee: }Las funciones que se llaman no deben modificar los
+	      registros guardados por la función llamada. Por el contrario, las funciones
+	      llamadas pueden modificarlos, pero deben restablecerlos a su estado original.
+	      En x86-64, estos son \mintinline{ASM}{rbx, rbp, r12, r13, r14 y r15}.
+\end{itemize}
+\begin{codebox}[ASM]{Solución}
+	.intel_syntax noprefix
+	.global solve
+
+	solve:
+	push rax
+	push rcx
+	push rdx
+	push r8
+	push r9
+	push r10
+	push r11
+	push rsi
+	push rdi
+
+	call rdi
+
+	pop rdi
+	pop rsi
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+	pop rdx
+	pop rcx
+	pop rax
+
+	call rsi
+	ret
+\end{codebox}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kJ2f8vc_wNmA_iDpjBMeWLfv8Cr.0FM4kDNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Saving Callee - Saved Registers} \label{subsec:saving_callee_saved_registers}
+
+Ya has practicado con los registros guardados por el llamante y ahora veremos los guardados por el llamado. Los registros guardados por el llamado (rbx, rbp, r12, r13, r14, r15) deben recuperarse sin alteraciones cuando el llamado regrese. Cuando una función utiliza uno de ellos, se lo toma prestado de quien la ha llamado y debe devolverlo exactamente en el mismo estado en que lo encontró. Esto es lo que permite al llamante mantener valores de larga duración en rbx, rbp y r12-r15 a lo largo de una llamada y confiar en que seguirán ahí después.
+
+La regla es: cuando tu función quiera utilizar estos registros, guárdalos (push) al entrar en tu función y restáuralos (pop) antes de llamar a ret.
+
+Este nivel te sitúa en el lado del llamado. Tu función «solve» se invoca como «solve(check_callee_clobbered)» (el puntero está en rdi), y tu llamante tiene valores activos en rbx, rbp, r12, r13, r14 y r15 que espera recuperar sin que se hayan modificado.
+
+\begin{codebox}[ASM]{Solución}
+	.intel_syntax noprefix
+	.global solve
+
+	solve:
+	push rbx
+	push rbp
+	push r12
+	push r13
+	push r14
+	push r15
+
+	mov rbx, 0x1337
+	mov rbp, 0x1337
+	mov r12, 0x1337
+	mov r13, 0x1337
+	mov r14, 0x1337
+	mov r15, 0x1337
+	call rdi
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	pop rbx
+	ret
+\end{codebox}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{UlHPPFUtUyQeov-6iT9TeCx0MLT.0VM4kDNywSMycjN4EzW}
+\end{flagbox}
 
