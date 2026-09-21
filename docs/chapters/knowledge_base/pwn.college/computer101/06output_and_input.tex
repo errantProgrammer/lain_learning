@@ -1,0 +1,363 @@
+% !TeX program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+\section{Output And Input}\label{sec:output_and_input}
+
+\sectiontoc
+
+\subsection{Video - System Calls}\label{subsec:video_system_calls}
+\subsection{Writing Output}\label{subsec:writing_output}
+
+Recordando los \textit{File Descriptors(FDs)}, vemos que cada proceso empieza con alguno de estos 3 FDs:
+
+\begin{itemize}
+	\item \textbf{FD 0:} Standard Input
+	\item \textbf{FD 1:} Standard Output
+	\item \textbf{FD 2:} Standard Error
+\end{itemize}
+
+En el caso de la llamada al sistema para \textit{\textbf{exit}}, tenemos que
+especificar que el valor de \mintinline{asm}{mov rdi, 42}. Ahora para poder
+ejecutar la llamada al sistema de \textit{\textbf{write}}, tenemos que
+establecer el valor de rdi en 1 o en 2.
+
+
+Ahora, este no es el único parámetro que requiere la instrucción
+\textit{\textbf{write}}, esta también necesita saber en que parte de la memoria
+esta el texto y cuantos caracteres vamos a leer. Similar a como sería una
+función en C:
+
+\begin{codebox}[C]{Ejemplo de la función write}
+	write(file_descriptor, memory address, number_of_characters_to_write)
+	# Ejemplo de su uso
+	write(1, memory address,10)
+\end{codebox}
+
+Ahora, por estándar, esto de aquí ya esta definido:
+
+\begin{itemize}
+	\item El primer parámetro siempre será \textit{\textbf{rdi}}.
+	\item El segundo parámetro siempre será \textit{\textbf{rsi}}.
+	\item El tercer parámetro siempre será \textit{\textbf{rdx}}.
+\end{itemize}
+
+\begin{codebox}[ASM]{}
+	mov rax , 1
+	mov rdi , 1
+	mov rsi , [rsp + 16]
+	mov rdx , 1
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{MkMD83Ee-aMqL23-gYH-nLVAcvF.QXwUTN2wSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Chaining Syscalls}\label{subsec:chaining_syscalls}
+
+
+En el código anterior, si lo compilamos y ejecutamos, vamos a ver que el
+programa se detiene, para que se no bloquee, se tiene que agregar la llamada
+de salida.
+
+\begin{codebox}[ASM]{}
+	mov rax , 1
+	mov rdi , 1
+	mov rsi , [rsp + 16]
+	mov rdx , 1
+	syscall
+	mov rax , 60
+	mov rdi , 42
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{k3RvbIqmOS-vpMk7rE2EgfBpya-.QXxUTN2wSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Writing String}\label{subsec:writing_string}
+
+Práctica para poder leer, más de un solo caracter, ya que en el ejemplo del
+capitulo \ref{subsec:writing_output}, es para un solo digito, en este caso
+solo se tendría que cambiar el valor de \textit{\textbf{rdx}}
+
+\begin{codebox}[ASM]{}
+	mov rax , 1
+	mov rdi , 1
+	mov rsi , [rsp + 16]
+	mov rdx , 64
+	syscall
+	mov rax , 60
+	mov rdi , 42
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{g79tV7cz1AjIFS6t816QBs5NXqM.01NzEDMxwSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Reading Data}\label{subsec:reading_data}
+
+Ahora para poder leer, vamos a usar de ejemplo como es en el lenguaje C.
+
+\begin{codebox}[C]{Reading syscall}
+	read(0,some_address,5)
+\end{codebox}
+
+En este caso, como vemos a partir de \textit{some\_address} se va a empezar a
+a rellenar, hasta leer los primeros 5 caracteres del texto.
+
+\begin{verbatim}
+       Address      | Contents
++-------------------+----------+
+| some_address      | 48       |
+| some_address+1    | 45       |
+| some_address+2    | 4c       |
+| some_address+3    | 4c       |
+| some_address+4    | 4f       |
++-------------------+----------+
+\end{verbatim}
+Aquí un ejemplo de su como sería leer, e imprimir un texto de 128 caracteres:
+\begin{codebox}[ASM]{}
+	mov rax , 0
+	mov rdi , 0
+	mov rsi , rsp
+	mov rdx , 128
+	syscall
+
+	mov rax , 1
+	mov rdi , 1
+	mov rsi , rsp
+	mov rdx , 128
+	syscall
+	mov rax , 60
+	mov rdi , 42
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{8hX8fIcaF2n1GfRHFQCGNA0JmKl.0FNwUTNxwSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Reading Exactly}\label{subsec:reading_exactly}
+
+Ahora, anteriormente como hemos visto anteriormente, hemos leído y escrito
+un mensaje de 128 caracteres, pero no siempre vamos a saber cuantos caracteres
+puede tener el texto que vamos a leer.
+
+La funcion \textit{\textbf{read}}, nos regresa el valor de la cantidad de
+caracteres que realmente a leído, y este se almacena en \textit{\textbf{rax}}.
+
+\begin{codebox}[ASM]{}
+	mov rax , 0
+	mov rdi , 0
+	mov rsi , rsp
+	mov rdx , 128
+	syscall
+
+	mov rdx, rax
+
+	mov rax , 1
+	mov rdi , 1
+	mov rsi , rsp
+	syscall
+	mov rax , 60
+	mov rdi , 42
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{8tnm880ONdKT9_M4-W93McmxZWn.0VM4ATNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Opening Files}\label{subsec:opening_files}
+
+Para abrir un archivo, que se encuentre en algun lugar de nuestro disco, vamos
+a necesitar acceso a dicho archivo, para esto necesitamos abrirlo.
+
+\begin{codebox}[C]{Open file}
+	open("/flag",0) # 0 default read-only
+\end{codebox}
+
+Ahora similar a la función \textit{\textbf{read}}, la función \textit{\textbf{open}}
+nos esta devolviendo un valor en \textit{\textbf{rax}}, el cual contiene
+el \textit{\textbf{fd}} del archivo que acabamos de leer, y se tiene que usar
+este de aquí para poder leer el archivo.
+
+\begin{codebox}[ASM]
+	mov rax, 2
+	mov rdi, [rsp+16]
+	mov rsi, 0
+	syscall
+
+	mov rdi, rax
+	mov rax, 0
+	mov rsi, rsp
+	mov rdx, 256
+	syscall
+
+	mov rdx, rax
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, rsp
+	syscall
+
+	mov rax, 60
+	mov rdi, 42
+	syscall
+\end{codebox}
+
+\begin{infobox}[Nota Informativa]
+	En este caso, se esta pasando la dirección del archivo, como parametro,por eso es que se lee
+	desde \textit{\textbf{rsp + 16}}.
+\end{infobox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{UYeD1OtcieFHPjdDycMVcs0l_aj.0VM0czMywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Hardcoding the Filename}\label{subsec:hardcoding_the_filename}
+
+En el caso anterio \ref{subsec:opening_files}, pasamos el valor del
+archivo como parametros, pero si queremos pasar el nombre de un archivo fijo,
+sería de la siguiente manera.
+
+\begin{codebox}[ASM]
+	.intel_syntax noprefix
+
+	mov BYTE PTR [rsp], '/'
+	mov BYTE PTR [rsp+1], 'f'
+	mov BYTE PTR [rsp+2], 'l'
+	mov BYTE PTR [rsp+3], 'a'
+	mov BYTE PTR [rsp+4], 'g'
+	mov BYTE PTR [rsp+5], 0
+
+	mov rax, 2
+	mov rdi, rsp
+	mov rsi, 0
+	syscall
+
+	mov rdi, rax
+	mov rax, 0
+	mov rsi, rsp
+	mov rdx, 128
+	syscall
+
+	mov rdx, rax
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, rsp
+	syscall
+
+	mov rax, 60
+	mov rdi, 42
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{ksqeBnvOJWvAvIls3V_A_gdsD9k.0lM0czMywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{RIP - Relative Strings}\label{subsec:rip_relative_strings}
+
+El problema que presentamos en la sección anterior
+\ref{subsec:hardcoding_the_filename}, es que si escribimos un error al escribir
+la dirección del texto, sería muy teidoso encontrar su error, o si el nombre
+del archivo es muy largo.
+
+Por lo que, en el código ensamblador, se puede contener bytes que no esten
+destinados a ejecutarse, estos serían colocados después de la llamada al
+sistema \textbf{\textit{exit}}.
+
+\begin{codebox}[ASM]{Ejemplo de bits adicionales}
+	_start:
+	...
+	mov rax, 60
+	syscall
+	path:
+	.asciz "/flag"
+\end{codebox}
+
+En este caso, la directiva \textbf{\textit{.asciz}} va a contener los bytes de
+la cadena, junto con el 0 de la termincación.
+
+Y la etiqueta \textbf{\textit{path}} marca donde comienzan esos bytes.
+
+Esto era factible en programas anteriores, donde los programas siempre se
+cargaban en la misma dirección de memoria, por lo que se podría escribir
+esto de aquí:
+
+\begin{codebox}[ASM]{}
+	_start:
+	...
+	mov rdi, path
+	path:
+	.asciz "/flag"
+\end{codebox}
+
+Esto de aquí no funciona, porque ahora los programas con compilados por un tema
+de seguridad, lo que impide conocer en que parte de la memoria es que se
+encuentra almacenado.
+
+Para esto de aquí, se creo el
+\textit{Instruction Pointer Relative Addressing(Dirección Relativo al Puntero de Instrucción)}
+El puntero de instrucción \textbf{\textit{rip}}, va a contener la dirección
+de la siguiente instrucción que se ejecutará en la CPU.
+
+\begin{codebox}[ASM]{}
+	_start:
+	...
+	mov rdi, [rip+path]
+	...
+	path:
+	.asciz "/flag"
+\end{codebox}
+
+Esto último presenta el problema que el valor de \textbf{\textit{rdi}}, va a ser \textbf{\textit{"/flag"}},
+no la dirección de memoria donde este esta almacenado, para esto se
+tiene que utilizar el la instrucción \textbf{\textit{lea}}.
+
+La instrucción \textbf{\textit{lea}}\textit{(Load Effective Address)}, permitiendo
+que se haga referencia a que la CPU calcula todas las operacoines necesarias,
+como sumar un desplamazamiento al puntero de instrucción.
+
+\begin{codebox}[ASM]{}
+	_start:
+	...
+	lea rdi, [rip+path]
+	...
+	path:
+	.asciz "/flag"
+\end{codebox}
+
+\begin{codebox}[ASM]{Solución del problema}
+	.intel_syntax noprefix
+
+	mov rax, 2
+	lea rdi, [rip + path]
+	mov rsi, 0
+	syscall
+
+	mov rdi, rax
+	mov rax, 0
+	mov rsi, rsp
+	mov rdx, 128
+	syscall
+
+	mov rdx, rax
+	mov rax, 1
+	mov rdi, 1
+	mov rsi, rsp
+	syscall
+
+	mov rax, 60
+	mov rdi, 42
+	syscall
+
+	path:
+	.asciz "/flag"
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{c45qx3vAQJ53UI51AOM6qFuPtYE.01N3ATNywSMycjN4EzW}
+\end{flagbox}

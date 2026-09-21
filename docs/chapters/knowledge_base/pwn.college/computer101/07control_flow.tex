@@ -1,0 +1,511 @@
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+\section{Control Flow}\label{sec:control_flow}
+
+\sectiontoc
+
+\subsection{Video - Registers}
+
+Este video ya se abordo anteriormente en \ref{subsec:video_registers}.
+
+\subsection{Video - Control Flow}\label{subsec:video_control_flow}
+
+\subsection{Comparing Values} \label{subsec:comparing_values}
+
+Para poder realizar las comparaciones, se utiliza la instrucción \textbf{\textit{cmp}},
+este compara 2 valores restando el segundo operando del primero.
+El valor de dicha resta, no se almacena en ningún lugar al que se pueda
+acceder directamente, este actualiza las \textbf{\textit{flag}} internas de la CPU.
+
+\begin{codebox}[ASM]{Ejemplo}
+	cmp rdi, 42             ; Se comprar un valor inmediato
+	cmp QWORD PTR [rsp], 42 ; tambien se puede comparar direcciones de memoria
+\end{codebox}
+
+Esto de aquí, calcula internamente \( rdi - 42 \) y la CPU estable un bit
+especial llamado \textbf{\textit{Zero Flag(ZF)}}, en caso de que la resta
+sea \( 0 \) el valor de \textbf{\textit{ZF}} es \( 1 \), caso contrario va a tomar el valor de \( 0 \).
+
+Con lo anteriormente mencionado x86 nos proporciona una familia de instrucciones
+que escriben \( 0 \) o \( 1 \) en un destino de 1 byte.
+
+\begin{codebox}[ASM]{}
+	setz dil
+\end{codebox}
+
+Esto comprueba el valor de  \textbf{\textit{ZF}}, y lo escribe en \textbf{\textit{dil}}.
+Y a su vez, \textbf{\textit{setnz(Set if Not Zero)}} que hace lo contrario.
+
+Recordar que \textbf{\textit{dil}} son los primeros \( 8 \) bits menos significativos
+del registro \textbf{\textit{rdi}}.
+\begin{codebox}[ASM]{Solución del Problema}
+	.intel_syntax noprefix
+	cmp QWORD PTR [rsp], 42
+	setz dil
+	mov rax, 60
+	syscall
+\end{codebox}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{s9M8ey0NvS8aym8WgNaOwwTzosR.01M0czMywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Comparing Characters} \label{subsec:comparing_characters}
+
+En el módulo de Stack, se vio que \mintinline{ASM}{[rsp + 16]}
+es un puntero al primero valor
+pasado como parámetro \textbf{\textit{argv[1]}}. Y como vimos en el capitulo anterior \ref{sec:output_and_input}
+podemos solo utilizar el valor de un solo byte (\mintinline{ASM}{BYTE PTR [rax]}), y con esto podemos realizar
+comparaciones de un solo caracter.
+
+\begin{codebox}[ASM]{Solución}
+	.intel_syntax noprefix
+	mov rax, [rsp + 16]
+	cmp BYTE PTR [rax], 'p'
+	setz dil
+	mov rax, 60
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{EK0Xt5rxYiy5yQWdKCGSVY3dSbL.0FN0czMywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Conditional Control Flow } \label{subsec:conditional_control_flow}
+
+Con el resultado anterior, se le puede indicar a la CPU que salte a otra parte
+del código.
+
+Estos se ejecutan después de la instrucción \mintinline{ASM}{cmp}, si quiere
+revisar todos los \href{https://www.felixcloutier.com/x86/jcc}{saltos condicionales}.
+
+Aquí una tabla resumen:
+
+\begin{table}[htpb]
+	\centering
+	\renewcommand{\arraystretch}{1.2}
+	\begin{tabular}{|l|l|l|l|l|}
+		\hline
+		\textbf{Instrucción}        & \textbf{Mnemónico / Significado} & \textbf{Condición lógica}      & \textbf{Banderas evaluadas}             \\ \hline
+		\texttt{jmp}                & Jump                             & Incondicional                  & Ninguna (salta siempre)                 \\ \hline
+		\texttt{je} / \texttt{jz}   & Jump if Equal / Zero             & $A == B$ o resultado cero      & \texttt{ZF = 1}                         \\ \hline
+		\texttt{jne} / \texttt{jnz} & Jump if Not Equal / Not Zero     & $A \neq B$ o resultado no cero & \texttt{ZF = 0}                         \\ \hline
+		\texttt{jg} / \texttt{jnle} & Jump if Greater                  & $A > B$ (con signo)            & \texttt{ZF = 0} y \texttt{SF = OF}      \\ \hline
+		\texttt{jge} / \texttt{jnl} & Jump if Greater or Equal         & $A \ge B$ (con signo)          & \texttt{SF = OF}                        \\ \hline
+		\texttt{jl} / \texttt{jnge} & Jump if Less                     & $A < B$ (con signo)            & \texttt{SF $\neq$ OF}                   \\ \hline
+		\texttt{jle} / \texttt{jng} & Jump if Less or Equal            & $A \le B$ (con signo)          & \texttt{ZF = 1} o \texttt{SF $\neq$ OF} \\ \hline
+		\texttt{ja} / \texttt{jnbe} & Jump if Above                    & $A > B$ (sin signo)            & \texttt{CF = 0} y \texttt{ZF = 0}       \\ \hline
+		\texttt{jae} / \texttt{jnb} & Jump if Above or Equal           & $A \ge B$ (sin signo)          & \texttt{CF = 0}                         \\ \hline
+		\texttt{jb} / \texttt{jc}   & Jump if Below / Carry            & $A < B$ (sin signo) / Acarreo  & \texttt{CF = 1}                         \\ \hline
+		\texttt{jbe} / \texttt{jna} & Jump if Below or Equal           & $A \le B$ (sin signo)          & \texttt{CF = 1} o \texttt{ZF = 1}       \\ \hline
+		\texttt{js}                 & Jump if Sign                     & Resultado negativo             & \texttt{SF = 1}                         \\ \hline
+		\texttt{jns}                & Jump if Not Sign                 & Resultado positivo o cero      & \texttt{SF = 0}                         \\ \hline
+		\texttt{jo}                 & Jump if Overflow                 & Desbordamiento con signo       & \texttt{OF = 1}                         \\ \hline
+		\texttt{jno}                & Jump if Not Overflow             & Sin desbord. con signo         & \texttt{OF = 0}                         \\ \hline
+	\end{tabular}
+	\caption{ Algunos saltos en ensamblador x86-64}
+	\label{tab:saltos_asm}
+\end{table}
+
+\begin{codebox}[ASM]{}
+	cmp BYTE PTR [rax], 'p'
+	jne fail
+\end{codebox}
+
+\textbf{\textit{fail}} es una \textbf{label}, estas no son una instrucción de máquina, sino como indicador para que el CPU
+sepa a que parte tiene que saltar para continuar con la ejecución.
+
+\begin{codebox}[ASM]{}
+	fail:
+	mov rdi, 1
+	mov rax, 60
+	syscall
+\end{codebox}
+
+En caso de que no se origine el salto, va a continuar con la ejecución normal.
+
+\begin{codebox}[ASM]{Ejemplo de uso}
+	main:
+	[load and compare]
+	jne fail          ←;jump to fail if NOT equal
+
+	success:
+	mov rdi, 0
+	mov rax, 60
+	syscall
+
+	fail:
+	mov rdi, 1
+	mov rax, 60
+	syscall
+\end{codebox}
+
+\begin{codebox}[ASM]{Solución del problema}
+	.intel_syntax noprefix
+	mov rax, [rsp + 16]
+	cmp BYTE PTR [rax], 'p'
+	jne fail
+
+	mov rdi,0
+	mov rax, 60
+	syscall
+
+	fail:
+	mov rdi,1
+	mov rax,60
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{QZ9khdqQojrEPg_83_78vJ54Ecc.0VN0czMywSMycjN4EzW}
+\end{flagbox}
+
+
+\subsection{Comparing  Strings} \label{subsec:comparing_strings}
+
+Para poder comparar string, se tiene que comparar letra por letra:
+\begin{codebox}[ASM]{}
+	mov rax, [rsp + 16]
+
+	cmp BYTE PTR [rax], 'Y'
+	jne fail
+
+	cmp BYTE PTR [rax+1], 'E'
+	jne fail
+
+	cmp BYTE PTR [rax+2], 'S'
+	jne fail
+\end{codebox}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{w_w8UjT_9EaU1ildN9bT0-Y5gF9.0lN0czMywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Reverse the Password} \label{subsec:reverse_the_password}
+
+Este desafio busca recordar los temas anteriores, como el \mintinline{bash}{objdump}, y lo que hemos visto
+anteriormennte para la comparación de caracteres y el poder leer código en \textbf{\textit{ASM}}.
+
+\begin{infobox}[Consideraciones]
+	Al momento de realizar comparaciones, tambien se puede hacer con el valor en hexadecimal su valor en ASCII a comparar
+
+	\begin{codebox}[ASM]{Comparacion con valor en hexadecimal}
+		cmp BYTE PTR [rax], 0x70 ; 0x70 = 112 = 'p'
+	\end{codebox}
+\end{infobox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{wNjWDbSIItWSvndFqwZshHkx8O-.01N0czMywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Conditionals Without Conditionals} \label{subsec:conditionals_without_conditionals}
+
+Para poder realizar una serie de condicionales, se suele trabajar con una \textbf{\textit{jump table}}
+en vez de tener una secuencia de condicionales, una detrás de otra.
+
+Si desamblamos un programa vamos a ver algo así:
+
+\begin{codebox}[ASM]{}
+	mov    rax, 0                    ; zero out rax
+	mov    al, BYTE PTR [rcx]        ; load the character into the low byte of rax
+	mov    rax, [rax*8+0x1234000]    ; load a stored address from the jump table at 0x1234000
+	jmp    rax                       ; jump to it
+\end{codebox}
+
+En este caso, el valor de \textbf{0x1234000}, representa la dirección donde se encuentra la
+tabla de saltos.
+
+En este problema, nos piden:
+\begin{enumerate}
+	\item Encontrar la dirección de la tabla de saltos, con \mintinline{bash}{objdump}
+	\item Con el GDB detectar cual es la dirección correcta a la que tiene que saltar para que salga existosamente.
+	\item calcular el valor correcto, con la siguiente formula \( \text{Índice} = \frac{\text{Dirección Slot}-\text{Dirección Base}}{8} \)
+\end{enumerate}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{QuJcHz6h6ZmYjOh93E_-XKn_J3b.0FO0czMywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Recognizing Loops} \label{subsec:recognizing_loops}
+
+Un blucle(\textit{loop}) es una secuencia de instrucciones que vuelve atrás para repetirse.
+
+\begin{codebox}[ASM]{Ejemplo de un bucle}
+	loop:
+	mov    al, BYTE PTR [rsi]       ; load next password character
+	cmp    al, BYTE PTR [rdi]       ; compare against next argv[1] character
+	jne    fail                     ; mismatch → jump to fail
+	cmp    al, 0x0                  ; reached the null terminator?
+	je     success                  ; yes → all characters matched!
+	inc    rdi                      ; **inc**rement rdi to advance to next argv[1] character
+	inc    rsi                      ; **inc**rement rsi to advance to next password character
+	jmp    loop                     ; jump back to the top — repeat!
+\end{codebox}
+
+En este caso, la instrucción de nuestro interés es la de \mintinline{asm}{jmp}, puesto que
+este siempre va a saltar de forma incondicional.
+
+Y el bucle terminará cuando se cumpla alguna de las condiciones.
+
+En este problema, nos piden:
+\begin{enumerate}
+	\item Detectar en que parte se encuentra el bucle con \mintinline{bash}{objdump}.
+	\item Detectar donde se esta almacenando la contraseña.
+	\item Traducir la contraseña escrita en formato hexadecimal, a codigo ASCII cada caracter.
+\end{enumerate}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{0Ae7WQpSJ7pA143bEe4QwhsamaT.0VO0czMywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Writing Loops} \label{subsec:writing_loops}
+
+Todo bucle necesita 3 elementos:
+
+\begin{enumerate}
+	\item Donde se encuentra actualmente.
+	\item Cuánto se ha avanzando.
+	\item Cuál es la condición de salida.
+\end{enumerate}
+\begin{codebox}[ASM]{}
+	.intel_syntax noprefix
+	mov rsi, [rsp + 16]
+	xor rdi, rdi
+	loop:
+	mov al, BYTE PTR [rsi]
+	cmp al,0x0
+	je sucess
+	inc rsi
+	inc rdi
+	jmp loop
+
+	sucess:
+	mov rax, 60
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kGPHs9T6Bo2idpKHvjEQsY42zj9.0lNyQTNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Writing From a Shared Library} \label{subsec:writing_from_a_shared_library}
+
+Lo que hemos realizado hasta ahorita son códigos que inician en
+\mintinline{ASM}{_start}, se ejecutan desde ahí y finalizan con una llamada al
+sistema.
+
+Una biblioteca compartida, será un fragmento de código compilado que otro programa
+carga en tiempo de ejecución y al que recurre. Siendo las bibliotecas una interfaz
+más cómoda para interactuar.
+
+Para poder acceder al código de la librería, vamos a utilizar la instrucción
+\mintinline{ASM}{call <target>}, esta instrucción empuja a la pila la dirección de la
+siguiente instrucción tras la instrucción call, para que sirva de dirección de retorno
+y saltamos a \mintinline{ASM}{<target>}.
+
+\begin{codebox}[ASM]{}
+	.intel_syntax nonprefix
+	.global solve
+	solve:
+	<your code, ending in an exit syscall>
+\end{codebox}
+
+La línea \mintinline{ASM}{.global solve}, va a exponer nuestro código para
+que otros programas puedan utilizar dicha función.
+
+Ahora para poder compilar nuestra biblioteca compartida, se va a usar la bandera
+\mintinline{bash}{-shared}, con el comando \mintinline{bash}{ld}, de la siguiente forma:
+
+\begin{codebox}[ASM]{}
+	as -o your-solve.o your-solve.s
+	ld -shared -o your-solve.so your-solve.o
+\end{codebox}
+
+Ahora para poder pasar los parámetros a la función, se tiene que seguir
+las convenciones de llamada(\textbf{\textit{calling convention}}).
+
+\begin{table}[htpb]
+	\begin{center}
+		\begin{tabular}[c]{l|l}
+			\hline
+			\multicolumn{1}{c|}{\textbf{Registo}} &
+			\multicolumn{1}{c}{\textbf{Función al incorporarse}}                        \\
+			\hline
+			rdi                                   & Primer argumento                    \\
+			rsi                                   & Segundo argumento                   \\
+			rdx                                   & Tercer argumento                    \\
+			rcx                                   & Cuarto argumento                    \\
+			r8                                    & Quinto argumento                    \\
+			r9                                    & Sexto argumento                     \\
+			\textbf{stack}                        & Empuja los demás valores a la pila. \\
+
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{ Calling conventions en asm x86  }\label{tab:calling_convention_x86}
+\end{table}
+
+\begin{codebox}[ASM]{Solución}
+	.intel_syntax noprefix
+	.global solve
+
+	solve:
+	mov rdx, rsi
+	mov rsi, rdi
+	mov rdi, 1
+	mov rax, 1
+	syscall
+
+	mov rdi, 0
+	mov rax, 60
+	syscall
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{czNSI3Wb6ITRsHns0b4elyvyfC4.0FN1kDNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Returning a Value} \label{subsec:returning_a_value}
+
+En la sección anterior \ref{subsec:writing_from_a_shared_library},
+terminamos la función llamando al sistema de \mintinline{ASM}{exit}.
+
+Al realizar esto de aquí, termina nuestro programa, pero no regresa el control a quien hizo la llamada,
+para que se pueda realizar eso de ahí, se hace uso de la llamada al sistema \mintinline{ASM}{ret}.
+
+En la convención de llamada de Linux x86-64, el valor de retorno se almacena en \mintinline{ASM}{rax}.
+\begin{codebox}[ASM]{Solución}
+	.intel_syntax noprefix
+	.global solve
+
+	solve:
+	mov rax, rdi
+	ret
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{YN5HsO6b9fLKQ2xnlOQ3Xuhap7L.0VN1kDNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Calling Through a Pointer} \label{subsec:calling_through_a_pointer}
+
+Para este caso, se esta pasando la ubicación de la función a llamar, en el registro
+\mintinline{ASM}{rdi}, y dicha ubicación es un valor de 64 bits que nos indica la
+ubicación de un framgento de código en la memoria.
+
+\begin{codebox}[ASM]{}
+	.intel_syntax noprefix
+	.global solve
+	solve:
+	call rdi
+	ret
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{sOlh7rNWQ3zTmxtLr38hoQqTUtR.0lN1kDNywSMycjN4EzW}
+\end{flagbox}
+\subsection{Calling Through a Pointer with an Argument} \label{subsec:calling_through_a_pointer_with_an_argument}
+En este desafio, el valor de \mintinline{ASM}{rdi}, contiene el valor
+de la función, y a la vez si queremos pasar un valor a la función, este va a seguir
+el las convenciones de llamada.
+
+\begin{codebox}[ASM]{}
+	.intel_syntax noprefix
+	.global solve
+	solve:
+	mov rax, rdi
+	mov rdi, 1337
+	call rax
+	ret
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{MLa5ffWiEMfwwHnZtH81on1VqGd.01N1kDNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Saving Caller - Saved Registers} \label{subsec:saving_caller_saved_registers}
+
+En la arquitectura x86-64, todos los programas comparten los mismo 16 registros
+por lo que la convención a llamada, establecen reglas estrictas sobre quién es
+responsable de preservar los datos al invocar la función.
+
+\begin{itemize}
+	\item \textbf{Caller:} Los registros \mintinline{ASM}{rax, rcx, rdx, rsi, rdi, r8, r9, r10, r11}
+	      se van a poder perder cuando se haga el llamado a la función, por eso mismo se tienen
+	      que guardar primero y restaurarlo después.
+
+	\item \textbf{Callee: }Las funciones que se llaman no deben modificar los
+	      registros guardados por la función llamada. Por el contrario, las funciones
+	      llamadas pueden modificarlos, pero deben restablecerlos a su estado original.
+	      En x86-64, estos son \mintinline{ASM}{rbx, rbp, r12, r13, r14 y r15}.
+\end{itemize}
+\begin{codebox}[ASM]{Solución}
+	.intel_syntax noprefix
+	.global solve
+
+	solve:
+	push rax
+	push rcx
+	push rdx
+	push r8
+	push r9
+	push r10
+	push r11
+	push rsi
+	push rdi
+
+	call rdi
+
+	pop rdi
+	pop rsi
+	pop r11
+	pop r10
+	pop r9
+	pop r8
+	pop rdx
+	pop rcx
+	pop rax
+
+	call rsi
+	ret
+\end{codebox}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kJ2f8vc_wNmA_iDpjBMeWLfv8Cr.0FM4kDNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Saving Callee - Saved Registers} \label{subsec:saving_callee_saved_registers}
+
+Ya has practicado con los registros guardados por el llamante y ahora veremos los guardados por el llamado. Los registros guardados por el llamado (rbx, rbp, r12, r13, r14, r15) deben recuperarse sin alteraciones cuando el llamado regrese. Cuando una función utiliza uno de ellos, se lo toma prestado de quien la ha llamado y debe devolverlo exactamente en el mismo estado en que lo encontró. Esto es lo que permite al llamante mantener valores de larga duración en rbx, rbp y r12-r15 a lo largo de una llamada y confiar en que seguirán ahí después.
+
+La regla es: cuando tu función quiera utilizar estos registros, guárdalos (push) al entrar en tu función y restáuralos (pop) antes de llamar a ret.
+
+\begin{codebox}[ASM]{Solución}
+	.intel_syntax noprefix
+	.global solve
+
+	solve:
+	push rbx
+	push rbp
+	push r12
+	push r13
+	push r14
+	push r15
+
+	mov rbx, 0x1337
+	mov rbp, 0x1337
+	mov r12, 0x1337
+	mov r13, 0x1337
+	mov r14, 0x1337
+	mov r15, 0x1337
+	call rdi
+
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	pop rbx
+	ret
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{UlHPPFUtUyQeov-6iT9TeCx0MLT.0VM4kDNywSMycjN4EzW}
+\end{flagbox}
+

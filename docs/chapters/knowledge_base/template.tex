@@ -1,0 +1,70 @@
+% !TeX program = pdflatex
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+
+\section{Template}
+\label{chap:template}
+\setCustomHeader{{\color{csecPurple}\faBrain}\ \textbf{Playbook}}{Knowledge Base \& Bitácora}{\today}
+
+Este capítulo es un ejemplo de como se tienen que realizar las demás secciones del libro
+% ================================================================================
+% 1. Metodología de Registro y Fuentes de Estudio
+% ================================================================================
+\subsection{Metodología de Registro y Fuentes de Consulta}
+Para que el conocimiento perdure y sea consultable de manera inmediata en auditorías reales o exámenes prácticos (como OSCP o CPTS), cada concepto registrado debe responder a tres preguntas fundamentales:
+\begin{enumerate}
+	\item \textbf{¿Qué aprendí?} (Concepto técnico, mecanismo de funcionamiento, payload o comando clave).
+	\item \textbf{¿Dónde lo aprendí?} (Libro con autor y capítulo, sitio web/documentación con URL, o máquina vulnerable con enlace interno).
+	\item \textbf{¿Cómo se aplica?} (Comando reproducible, script o prueba de concepto).
+\end{enumerate}
+
+\begin{infobox}[Badges de Fuentes Disponibles]
+	Para estandarizar el origen del conocimiento, dispones de la macro \texttt{\textbackslash sourceBadge\{\ldots\}} y el comando \texttt{\textbackslash resourceItem\{Tipo\}\{Título/Autor\}\{Detalle/Enlace\}}:
+	\begin{center}
+		\small
+		\sourceBadge{Libro} \hspace{4pt}
+		\sourceBadge{Web} \hspace{4pt}
+		\sourceBadge{Docs} \hspace{4pt}
+		\sourceBadge{Curso} \hspace{4pt}
+		\sourceBadge{Lab} \hspace{4pt}
+		\sourceBadge{Writeup} \hspace{4pt}
+		\sourceBadge{Video} \hspace{4pt}
+		\sourceBadge{Paper}
+	\end{center}
+\end{infobox}
+
+
+\subsection{Ejemplo de algunas cajas}
+
+\begin{learningbox}[Conceptos Clave Aprendidos: Bash Avanzado]
+	\begin{itemize}[leftmargin=*]
+		\item \textbf{Redirección y Descriptores de Ficheros:} Control preciso de \texttt{stdin} (0), \texttt{stdout} (1) y \texttt{stderr} (2). Uso de \texttt{2>\&1} para unificar flujos y \texttt{/dev/null} para silenciar ruido en bucles.
+		\item \textbf{One-Liners de Reconocimiento:} Uso de combinaciones de \texttt{curl}, \texttt{grep}, \texttt{sed}, \texttt{awk} y \texttt{xargs} para extraer subdominios o endpoints activos en segundos sin herramientas pesadas.
+		\item \textbf{Subshells y Captura de Salida:} Diferencia entre asignación síncrona mediante \texttt{\$(comando)} y ejecución en subshell background con \texttt{\&} junto al comando \texttt{wait}.
+		\item \textbf{Manejo de Señales (\texttt{trap}):} Limpieza automática de ficheros temporales y sockets al pulsar \texttt{Ctrl+C} (\texttt{SIGINT}) en scripts interactivos.
+	\end{itemize}
+\end{learningbox}
+
+\begin{sourcebox}[Fuentes y Bibliografía Utilizadas]
+	\begin{itemize}[leftmargin=*]
+		\resourceItem{Libro}{The Linux Command Line: A Complete Introduction (William Shotts)}{Capítulos 20 al 35: Entornos shell, variables, control de flujo y scripts robustos}
+		\resourceItem{Libro}{Wicked Cool Shell Scripts (Dave Taylor \& Brandon Perry)}{2ª Edición — Scripts prácticos para administración de sistemas y seguridad}
+		\resourceItem{Web}{Bash Hackers Wiki — Guía profunda de sintaxis y buenas prácticas}{\url{https://wiki.bash-hackers.org}}
+		\resourceItem{Web}{ExplainShell — Análisis visual e interactivo de comandos y flags}{\url{https://explainshell.com}}
+		\resourceItem{Docs}{GNU Bash Reference Manual Oficial}{\url{https://www.gnu.org/software/bash/manual/}}
+	\end{itemize}
+\end{sourcebox}
+
+
+\begin{bashbox}{Snippet Útil: Escaneo Rápido de Hosts Vía Ping en Bash}
+	#!/usr/bin/env bash
+	# Sweep rápido de red /24 en paralelo usando subshells
+	SUBNET="10.10.10"
+	echo "[*] Escaneando subred ${SUBNET}.0/24..."
+
+		for ip in $(seq 1 254); do
+	(ping -c 1 -W 1 "${SUBNET}.${ip}" &>/dev/null && echo "[+] Host activo: ${SUBNET}.${ip}") &
+	done
+	wait
+	echo "[*] Barrido completado."
+\end{bashbox}
