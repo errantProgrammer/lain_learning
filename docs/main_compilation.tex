@@ -61,7 +61,7 @@
 		\centering
 		{\Large \textbf{\color{csecDark}errantprogrammer}}\par
 		\vspace{0.3cm}
-		{\footnotesize \color{csecCyan}\textbf{v1.0 (2026)} \quad \color{csecBorder}\textbar\quad \color{csecMuted}\today}
+		{\footnotesize \color{csecCyan}\textbf{v1.2 (2026)} \quad \color{csecBorder}\textbar\quad \color{csecMuted}\today}
 	\end{minipage}
 	\vspace*{1.2cm}
 \end{titlepage}
@@ -85,6 +85,9 @@
 % ================================================================================
 \cleardoublepage
 \setCustomHeader{{\color{csecCyan}\faList}\ \textbf{Playbook}}{Índice General}{\today}
+% Profundidad ejecutiva: Solo capítulos en el Índice General (evita índices masivos).
+% Cambiar a {section} si se desean visualizar máquinas/secciones principales.
+\etocsettocdepth{chapter}
 \tableofcontents
 \cleardoublepage
 

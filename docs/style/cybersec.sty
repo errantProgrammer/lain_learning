@@ -12,10 +12,72 @@
 
 \RequirePackage[margin=2.2cm,top=2.5cm,bottom=2.5cm]{geometry}
 \setlength{\headheight}{26pt} % Avoid fancyhdr height warnings
-
 \RequirePackage[table,xcdraw,dvipsnames]{xcolor}
 \RequirePackage{graphicx}
-\graphicspath{{figure/}{./figure/}{../figure/}{../../figure/}}
+% Rutas base por defecto para logotipos y figuras globales
+\graphicspath{%
+	{figure/}%
+	{./figure/}%
+	{../figure/}%
+	{../../figure/}%
+	{img/}%
+	{./img/}%
+	{../img/}%
+	{../../img/}%
+}
+
+% ================================================================================
+% Configuración dinámica de la carpeta de imágenes por capítulo (capituloXX/img)
+% ================================================================================
+\makeatletter
+\newcommand{\setchapterimagepath}[1]{%
+	\graphicspath{%
+		{#1/}%
+		{#1/img/}%
+		{./#1/}%
+		{./#1/img/}%
+		{../#1/}%
+		{../#1/img/}%
+		{../../#1/}%
+		{../../#1/img/}%
+		{../../../#1/}%
+		{../../../#1/img/}%
+		{chapters/#1/}%
+		{chapters/#1/img/}%
+		{chapters/knowledge_base/#1/}%
+		{chapters/knowledge_base/#1/img/}%
+		{writeups/#1/}%
+		{writeups/#1/img/}%
+		{figure/}%
+		{./figure/}%
+		{../figure/}%
+		{../../figure/}%
+		{img/}%
+		{./img/}%
+		{../img/}%
+		{../../img/}%
+	}%
+}
+\newcommand{\setimgpath}[1]{\setchapterimagepath{#1}}
+
+\newcommand{\addchapterimagepath}[1]{%
+	\g@addto@macro\Ginput@path{%
+		{#1/}%
+		{#1/img/}%
+		{./#1/}%
+		{./#1/img/}%
+		{../#1/}%
+		{../#1/img/}%
+		{../../#1/}%
+		{../../#1/img/}%
+		{chapters/#1/}%
+		{chapters/#1/img/}%
+		{chapters/knowledge_base/#1/}%
+		{chapters/knowledge_base/#1/img/}%
+	}%
+}
+\newcommand{\addimgpath}[1]{\addchapterimagepath{#1}}
+\makeatother
 
 \RequirePackage{fancyhdr}
 \RequirePackage{lastpage}
@@ -30,10 +92,12 @@
 \RequirePackage{amsmath,amssymb}
 \RequirePackage{minted}
 \RequirePackage[most]{tcolorbox}
-\tcbuselibrary{minted,skins}
+\tcbuselibrary{minted,skins,breakable}
 \RequirePackage{fontawesome5}
 \RequirePackage{subfiles}
 \RequirePackage{bookmark}
+\RequirePackage{etoc}
+\RequirePackage{multicol}
 
 % ================================================================================
 % Dynamic Numbering (1, 1.1 in Standalone | 1.1, 1.1.1 in Master Book)
@@ -499,6 +563,84 @@ boxed title style={
 % 5. Callouts, Notes & Alert Boxes (Modular Package: style/callouts.sty)
 % ================================================================================
 \RequirePackage{style/callouts}
+
+% ================================================================================
+% 6. Local Table of Contents (Mini-TOC for Chapters & Modules via etoc)
+% ================================================================================
+\newtcolorbox{localtocbox}[1][Estructura y Contenido]{
+	enhanced,
+	breakable,
+	arc=4pt,
+	colback=csecLight,
+	colframe=csecCyan,
+	boxrule=0.8pt,
+	leftrule=3.5pt,
+	title={{\color{csecCyan}\faCompass}\ \textbf{#1}},
+	coltitle=csecDark,
+	fonttitle=\bfseries\small,
+	colbacktitle=csecBorder!30,
+	attach boxed title to top left={yshift=-2mm, xshift=3mm},
+	boxed title style={boxrule=0.4pt, colframe=csecCyan!50, arc=2pt},
+	top=10pt, bottom=6pt, left=8pt, right=8pt
+}
+
+\NewDocumentCommand{\chaptertoc}{O{Estructura y Contenido del Capítulo} O{section}}{%
+	\begingroup
+	\etocsettocstyle{\begin{localtocbox}[#1]}{\end{localtocbox}}%
+	\etocsettocdepth{#2}%
+	\localtableofcontents
+	\endgroup
+}
+
+\NewDocumentCommand{\localtoc}{O{Estructura y Contenido} O{subsection}}{%
+	\begingroup
+	\etocsettocstyle{\begin{localtocbox}[#1]}{\end{localtocbox}}%
+	\etocsettocdepth{#2}%
+	\localtableofcontents
+	\endgroup
+}
+
+% 6.1 Mini-TOC de Sección: Lista de subsecciones a 2 columnas (solo nombre, sin páginas)
+\newtcolorbox{sectiontocbox}[1][Subsecciones del Tema]{
+	enhanced,
+	breakable,
+	arc=3pt,
+	colback=csecLight,
+	colframe=csecCyan!80,
+	boxrule=0.6pt,
+	leftrule=3pt,
+	title={{\color{csecCyan}\faListUl}\ \textbf{#1}},
+	coltitle=csecDark,
+	fonttitle=\bfseries\footnotesize,
+	colbacktitle=csecBorder!25,
+	attach boxed title to top left={yshift=-2mm, xshift=3mm},
+	boxed title style={boxrule=0.4pt, colframe=csecCyan!50, arc=2pt},
+	top=8pt, bottom=6pt, left=8pt, right=8pt
+}
+
+\NewDocumentCommand{\sectiontoc}{s O{Subsecciones del Tema}}{%
+	\begingroup
+	\etocsettocstyle{\begin{sectiontocbox}[#2]\begin{multicols}{2}}{\end{multicols}\end{sectiontocbox}}%
+	\etocsettocdepth{subsection}%
+	\IfBooleanTF{#1}{%
+		% Con estrella (*): incluye número (ej: 1.1.1 Nombre)
+		\etocsetstyle{subsection}%
+			{}%
+			{}%
+			{\noindent\footnotesize\hangindent=1.2em\hangafter=1\color{csecCyan}\faAngleRight\ \color{csecDark}\etoclink{\etocnumber\ \etocname}\par\vspace{2pt}}%
+			{}%
+	}{%
+		% Sin estrella (por defecto): solo el nombre de la subsección, sin número ni página
+		\etocsetstyle{subsection}%
+			{}%
+			{}%
+			{\noindent\footnotesize\hangindent=1.2em\hangafter=1\color{csecCyan}\faAngleRight\ \color{csecDark}\etoclink{\etocname}\par\vspace{2pt}}%
+			{}%
+	}%
+	\localtableofcontents
+	\endgroup
+}
+\newcommand{\subsectionsTOC}[1][]{\sectiontoc[#1]}
 
 % ================================================================================
 % Auto-Generated Progress Dashboard Mechanism

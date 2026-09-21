@@ -13,6 +13,7 @@
 
 Este capítulo proporciona una guía completa y exhaustiva sobre la estructura, los componentes visuales, la paleta de colores, los entornos interactivos y los procedimientos de instalación multiplataforma del \textbf{Template de Ciberseguridad}.
 
+\chaptertoc
 
 \section{Instalación y Configuración del Entorno}
 Para utilizar este repositorio y generar documentos PDF con tipografía vectorial, iconos FontAwesome, gráficos TikZ y resaltado de sintaxis con \textbf{\texttt{minted}} sin errores, sigue las instrucciones de instalación según tu sistema operativo:
@@ -130,6 +131,51 @@ La jerarquía de carpetas está estandarizada de la siguiente manera:
 	            |-- writeup.tex      # Reto individual de CTF
 	            \-- figure/
 \end{codebox}
+
+\subsection{Organización de Imágenes por Capítulo (\texttt{\textbackslash setchapterimagepath})}
+Para evitar problemas con rutas relativas al insertar imágenes en los apuntes, cada capítulo o módulo técnico puede contar con su propia carpeta de imágenes (por ejemplo \texttt{capituloXX/img/} o \texttt{computer101/img/}).
+
+Dispones del comando \texttt{\textbackslash setchapterimagepath\{\ldots\}} (o su alias \texttt{\textbackslash setimgpath\{\ldots\}}), el cual se define al inicio del capítulo:
+
+\begin{codebox}[latex]{Definir Carpeta de Imágenes de un Capítulo}
+% Al inicio del capitulo (ej: capitulo01.tex o computer101.tex):
+\setchapterimagepath{chapters/knowledge_base/pwn.college/computer101}
+% O simplemente: \setchapterimagepath{capituloXX}
+\end{codebox}
+
+Esto registra automáticamente las subcarpetas locales y relativas (\texttt{img/}, \texttt{./img/}, etc.). Gracias a esto, dentro de cualquier sección de ese capítulo puedes incluir tus imágenes de forma limpia e intuitiva:
+
+\begin{codebox}[latex]{Inserción de Imágenes en las Secciones}
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{nombre_imagen.png}
+	% Tambien es valido con subcarpetas:
+	% \includegraphics[width=0.8\textwidth]{01_seccion/captura.png}
+	% \includegraphics[width=0.8\textwidth]{img/01_seccion/captura.png}
+	\caption{Descripción ilustrativa de la captura}
+\end{figure}
+\end{codebox}
+Si un capítulo requiere imágenes de múltiples directorios simultáneos, puedes utilizar el comando
+\texttt{\textbackslash addchapterimagepath} para añadir rutas adicionales sin perder las anteriores.
+
+\subsection{Mini-TOCs Locales por Capítulo o Writeup (\texttt{\textbackslash chaptertoc} y \texttt{\textbackslash localtoc})}
+Para evitar que el Índice General del libro se sobrecargue con cientos de entradas conforme el proyecto crece, el template implementa una arquitectura de doble nivel mediante el paquete \textbf{\texttt{etoc}}:
+\begin{itemize}
+	\item \textbf{Índice General Ejecutivo:} Ubicado en \texttt{main\_compilation.tex}, restringido por defecto a nivel de capítulos (\texttt{\textbackslash etocsettocdepth\{chapter\}}).
+	\item \textbf{Mini-TOC Local de Capítulo (\texttt{\textbackslash chaptertoc}):} Al inicio de cada capítulo o módulo técnico, inserta una elegante caja interactiva que lista las secciones correspondientes:
+\begin{codebox}[latex]{Uso de chaptertoc en un Capítulo}
+\chapter{PWN College - Computer 101}
+\chaptertoc % Muestra las secciones principales del capítulo
+% Para incluir subsecciones: \chaptertoc[Estructura Detallada][subsection]
+\end{codebox}
+	\item \textbf{Mini-TOC de Sección a 2 Columnas (\texttt{\textbackslash sectiontoc}):} Al inicio de cada sección con múltiples subsecciones, crea una caja compacta dividida en dos columnas que muestra \textbf{únicamente los nombres de las subsecciones} (sin páginas ni números que saturen el espacio), con enlaces clicables directos:
+\begin{codebox}[latex]{Uso de sectiontoc en una Sección}
+\section{Your First Program}
+\sectiontoc % Lista las subsecciones a 2 columnas (solo nombres)
+% Si se desea incluir los números de subsección: \sectiontoc*
+\end{codebox}
+	\item \textbf{Mini-TOC de Writeup (\texttt{\textbackslash localtoc}):} En writeups individuales (donde la máquina es una \texttt{\textbackslash section}), desglosa las subsecciones de las fases de ataque (\textit{Reconocimiento}, \textit{Explotación}, etc.).
+\end{itemize}
 
 
 \section{Paleta de Colores Oficial}

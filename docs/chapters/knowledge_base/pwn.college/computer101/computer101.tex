@@ -2,9 +2,25 @@
 % !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
 % !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
 
+\documentclass[../../../../main_compilation.tex]{subfiles}
+
+\begin{document}
+
 \chapter{PWN College - Computer 101}
 \label{chap:computer101}
 \setCustomHeader{{\color{csecPurple}\faGraduationCap}\ \textbf{PWN College}}{Computer 101}{\today}
 
-\input{./chapters/knowledge_base/pwn.college/computer101/06output_and_input.tex}
-\input{./chapters/knowledge_base/pwn.college/computer101/07control_flow.tex}
+% Carpeta de imágenes para este capítulo
+\setchapterimagepath{chapters/knowledge_base/pwn.college/computer101}
+
+\chaptertoc
+
+\input{./01your_first_program.tex}
+\input{./02computer_memory.tex}
+\input{./03the_stack.tex}
+\input{./05software_introspection.tex}
+\input{./06output_and_input.tex}
+\input{./07control_flow.tex}
+
+\end{document}
+

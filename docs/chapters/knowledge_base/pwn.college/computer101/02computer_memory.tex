@@ -1,0 +1,68 @@
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+% !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
+\section{Computer Memory}\label{sec:02_computer_memory}
+
+\sectiontoc
+
+\subsection{Video - (review) Computer Architecture}\label{subsec:video_review_computer_architecture}
+
+Una recapitulación del capitulo anterior.
+
+\subsection{Video - Memory}\label{subsec:video_memory}
+
+\subsection{Loading From Memory}\label{subsec:loading_from_memory}
+
+La memoria al ser un lugar muy grande, esta se almacena de forma
+secuencial, por lo tanto cuando realizamos lo siguiente:
+
+\begin{codebox}[ASM]{}
+	mov rdi, 31337
+\end{codebox}
+
+En este caso, almacenamos el valor de 31337 en el registro de \mintinline{asm}{rdi}.
+
+Pero si queremos saber el valor del registro \mintinline{asm}{31337}:
+
+\begin{codebox}[ASM]{}
+	mov rdi, [31337]
+\end{codebox}
+
+Entonces, aquí estamos moviendo el valor del registro \mintinline{asm}{31337} al valor de \mintinline{asm}{rdi}.
+
+\subsection{More Loading Practice}\label{subsec:more_loading_practice}
+
+Más práctica, aquí.
+
+\subsection{Dereferencing Pointers}\label{subsec:dereferencing_pointers}
+
+\subsection{Dereferencing Yourself}\label{subsec:dereferencing_yourself}
+
+Podemos realizar la desreferencia, de un registro en el mismo registro.
+
+\begin{codebox}[ASM]{}
+	mov rdi, [rdi]
+\end{codebox}
+
+\subsection{Dereferencing with Offsets}\label{subsec:dereferencing_with_offsets}
+
+El valor de \mintinline{asm}{[rdi]}, es el valor de un registro de la memoria. Por lo tanto,
+se puede realizar un aumento, para poder buscar un valor adicional.
+
+\begin{codebox}[ASM]{}
+	mov rdi, [rdi + 8]
+\end{codebox}
+
+\subsection{Stored Addresses}\label{subsec:stored_addresses}
+
+\subsection{Double Dereference}\label{subsec:double_dereference}
+
+\subsection{Dictionary}\label{subsec:dictionary}
+
+\begin{center}
+	\begin{tabular}{|l|l|}
+		\hline
+		\textbf{English} & \textbf{Spanish} \\ \hline
+		word             & palabra          \\ \hline
+		word             & palabra          \\ \hline
+	\end{tabular}
+\end{center}
