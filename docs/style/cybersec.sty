@@ -9,6 +9,7 @@
 \RequirePackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
 \RequirePackage{inconsolata} % Monospace font for code and terminal
+\RequirePackage{float}
 
 \RequirePackage[margin=2.2cm,top=2.5cm,bottom=2.5cm]{geometry}
 \setlength{\headheight}{26pt} % Avoid fancyhdr height warnings
@@ -17,13 +18,13 @@
 % Rutas base por defecto para logotipos y figuras globales
 \graphicspath{%
 	{figure/}%
-	{./figure/}%
-	{../figure/}%
-	{../../figure/}%
-	{img/}%
-	{./img/}%
-	{../img/}%
-	{../../img/}%
+		{./figure/}%
+		{../figure/}%
+		{../../figure/}%
+		{img/}%
+		{./img/}%
+		{../img/}%
+		{../../img/}%
 }
 
 % ================================================================================
@@ -33,29 +34,29 @@
 \newcommand{\setchapterimagepath}[1]{%
 	\graphicspath{%
 		{#1/}%
-		{#1/img/}%
-		{./#1/}%
-		{./#1/img/}%
-		{../#1/}%
-		{../#1/img/}%
-		{../../#1/}%
-		{../../#1/img/}%
-		{../../../#1/}%
-		{../../../#1/img/}%
-		{chapters/#1/}%
-		{chapters/#1/img/}%
-		{chapters/knowledge_base/#1/}%
-		{chapters/knowledge_base/#1/img/}%
-		{writeups/#1/}%
-		{writeups/#1/img/}%
-		{figure/}%
-		{./figure/}%
-		{../figure/}%
-		{../../figure/}%
-		{img/}%
-		{./img/}%
-		{../img/}%
-		{../../img/}%
+			{#1/img/}%
+			{./#1/}%
+			{./#1/img/}%
+			{../#1/}%
+			{../#1/img/}%
+			{../../#1/}%
+			{../../#1/img/}%
+			{../../../#1/}%
+			{../../../#1/img/}%
+			{chapters/#1/}%
+			{chapters/#1/img/}%
+			{chapters/knowledge_base/#1/}%
+			{chapters/knowledge_base/#1/img/}%
+			{writeups/#1/}%
+			{writeups/#1/img/}%
+			{figure/}%
+			{./figure/}%
+			{../figure/}%
+			{../../figure/}%
+			{img/}%
+			{./img/}%
+			{../img/}%
+			{../../img/}%
 	}%
 }
 \newcommand{\setimgpath}[1]{\setchapterimagepath{#1}}
@@ -63,17 +64,17 @@
 \newcommand{\addchapterimagepath}[1]{%
 	\g@addto@macro\Ginput@path{%
 		{#1/}%
-		{#1/img/}%
-		{./#1/}%
-		{./#1/img/}%
-		{../#1/}%
-		{../#1/img/}%
-		{../../#1/}%
-		{../../#1/img/}%
-		{chapters/#1/}%
-		{chapters/#1/img/}%
-		{chapters/knowledge_base/#1/}%
-		{chapters/knowledge_base/#1/img/}%
+			{#1/img/}%
+			{./#1/}%
+			{./#1/img/}%
+			{../#1/}%
+			{../#1/img/}%
+			{../../#1/}%
+			{../../#1/img/}%
+			{chapters/#1/}%
+			{chapters/#1/img/}%
+			{chapters/knowledge_base/#1/}%
+			{chapters/knowledge_base/#1/img/}%
 	}%
 }
 \newcommand{\addimgpath}[1]{\addchapterimagepath{#1}}
@@ -625,17 +626,17 @@ boxed title style={
 	\IfBooleanTF{#1}{%
 		% Con estrella (*): incluye número (ej: 1.1.1 Nombre)
 		\etocsetstyle{subsection}%
-			{}%
-			{}%
-			{\noindent\footnotesize\hangindent=1.2em\hangafter=1\color{csecCyan}\faAngleRight\ \color{csecDark}\etoclink{\etocnumber\ \etocname}\par\vspace{2pt}}%
-			{}%
+		{}%
+		{}%
+		{\noindent\footnotesize\hangindent=1.2em\hangafter=1\color{csecCyan}\faAngleRight\ \color{csecDark}\etoclink{\etocnumber\ \etocname}\par\vspace{2pt}}%
+		{}%
 	}{%
 		% Sin estrella (por defecto): solo el nombre de la subsección, sin número ni página
 		\etocsetstyle{subsection}%
-			{}%
-			{}%
-			{\noindent\footnotesize\hangindent=1.2em\hangafter=1\color{csecCyan}\faAngleRight\ \color{csecDark}\etoclink{\etocname}\par\vspace{2pt}}%
-			{}%
+		{}%
+		{}%
+		{\noindent\footnotesize\hangindent=1.2em\hangafter=1\color{csecCyan}\faAngleRight\ \color{csecDark}\etoclink{\etocname}\par\vspace{2pt}}%
+		{}%
 	}%
 	\localtableofcontents
 	\endgroup
