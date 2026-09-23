@@ -3,13 +3,226 @@
 \section{Endian Escapades}\label{sec:endian_escapades}
 
 \subsection{Texto - Litte-Endian}\label{subsec:litte_endian}
+
+Cualquier valor que ocupe más de un byte, se divide en bytes individuales
+para poder almacenarse en memoria, ya que la memoria se direcciona byte a byte.
+
+La mayoría de las arquitecturas almacenan el dígito \textit{menos significativo} a la izquierda
+y el \textit{más significativo} a la derecha. Un ejemplo sería el \( 0x1234 \), se
+almacenaría como \( 34 \) \( 12 \). A este tipo de arquitecturas se les denomina Litte-Endian.
+Esto de aquí, se realiza por las siguiente manera:
+
+\begin{enumerate}
+	\item Las mayoría de las operaciones aritméticas, se realiza partiendo del \textit{litte\_endian} y esto que los componentes electrónicos sea más natural.
+	\item La dirección de un valor es la dirección de su byte menor, por lo que leer 1 byte o 2 bytes,
+	      equivale a la misma dirección, simplemente se lee menos bytes.
+\end{enumerate}
+
+\begin{table}[H]
+	\centering
+	\resizebox{\textwidth}{!}{%
+		\begin{tabular}{lllll}
+			\toprule
+			size of value & decimal value & hex value          & big endian bytes (NOT x86) & little endian bytes (x86) \\
+			\midrule
+			8 (1 byte)    & 65            & 0x41               & 41                         & 41                        \\
+			\midrule
+			16 (2 bytes)  & 4660          & 0x1234             & 12 34                      & 34 12                     \\
+			\midrule
+			32 (4 bytes)  & 1145258561    & 0x44434241         & 44 43 42 41                & 41 42 43 44               \\
+			\midrule
+			64 (8 bytes)  & 1145258561    & 0x0000000044434241 & 00 00 00 00 44 43 42 41    & 41 42 43 44 00 00 00 00   \\
+			\bottomrule
+		\end{tabular}%
+	}
+	\caption{Ejemplo de almacenamiento en \textbf{\textit{Little-Endian}} y \textbf{\textit{Big-Endian}}}
+	\label{tab:example_little_and_big_endian}
+\end{table}
+
 \subsection{Texto - Memory Order and Register Values}\label{subsec:memory_order_and_register_values}
+
+El punto en el que es más facil confundirse es la forma entre el orden de la
+memoria y el valor que se imprime desde un registro.
+
+Esto no importa en sí, puesto que \textbf{\textit{x86}} lo organiza y
+maneja por nosotros.
+
+\begin{table}[H]
+	\begin{center}
+		\begin{tabular}{cc}
+			\toprule
+			\textbf{memory address order: } & 41 42 43 44 45 46 47 48 \\
+			\midrule
+			\textbf{register hex order: }   & 48 47 46 45 44 43 42 41 \\
+			\midrule
+			\textbf{rax value: }            & 0x4847464544434241      \\
+			\bottomrule
+		\end{tabular}
+	\end{center}
+	\caption{Ejemplo de como se almacena}\label{tab:example_store_number_little_endian}
+\end{table}
+
 \subsection{Texto - Bytes, Words, and Friends}\label{subsec:bytes_words_and_friends}
+
+En x86 se va a estar trabajando siempre con diferentes tamaños de \textit{bits},
+\( 2,4,6\ u \ 8 \), y es bueno concerlo porque siempre vamos a estar
+trabajando con ellos:
+
+\begin{table}[htbp]
+	\begin{center}
+		\begin{tabular}[c]{|l|l|l|l|l|}
+			\hline
+			Name & Bits & Bytes & Partial \mintinline{ASM}{rax} Access & Memory Access                                              \\
+			\hline
+			byte & 8    & 1     & \mintinline{ASM}{mov al, [rdi]}      & \mintinline{ASM}{mov BYTE PTR [rdi], 0x11 }                \\
+			\hline
+			word & 16   & 2     & \mintinline{ASM}{mov ax, [rdi]}      & \mintinline{ASM}{mov WORD PTR [rdi], 0x1122 }              \\
+			\hline
+			byte & 32   & 4     & \mintinline{ASM}{mov eax, [rdi]}     & \mintinline{ASM}{mov DWORD PTR [rdi], 0x11223344 }         \\
+			\hline
+			byte & 64   & 8     & \mintinline{ASM}{mov rax, [rdi]}     & \mintinline{ASM}{mov QWORD PTR [rdi], 0x1122334455667788 } \\
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{Acceso a \( 2,4,6,8 \) bits.}\label{tab:access_common_bits}
+\end{table}
+
 \subsection{Sign Extension}\label{subsec:sign_extension}
+
+Cuando tenemos un valor pequeños se copia en un registro más grande, ya sea con signo o sin singo.
+
+\begin{itemize}
+	\item Si es sin signo, se completa con \( 0x00 \).
+	\item en caso de ser con signo, se completa con \( 0xff \)
+\end{itemize}
+
+\begin{codebox}[ASM]{Ejemplo}
+	movsx rax, BYTE PTR [rdi]
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{Usl3_X2rxpybRnMEdg3QKPujgYD.0FO3ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Litte-Endian Bytes}\label{subsec:litte_endian_bytes}
+Esta sección busca poner a prueba lo aprendido y utiliza una nueva instrucción, para poder cargar
+un \textbf{QWORD} con la instrucción \mintinline{ASM}{movabs}.
+
+Ya que un \mintinline{ASM}{mov} normal solo copia los 32 bits, pero con \mintinline{ASM}{movabs},
+vamos a estar pasando los 64 bits.
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{s2JCuuYszW9MKQG8WFMrqLdbwEV.0VM0ATNywSMycjN4EzW}
+\end{flagbox}
 \subsection{Qword by Qword}\label{subsec:qword_by_qword}
+
+Si bien podemos tener un máximo de 8 caracters almacenados, en un \textbf{QWORD},
+no siempre es así, se puede tener mensajes de una mayor cantidad, para esto
+se concatena los valores
+
+\begin{table}[htbp]
+	\begin{center}
+		\begin{tabular}[c]{l|l}
+			\hline
+			Address  & value \\
+			\hline
+			0x133700 & 0x41  \\
+			\hline
+			0x133701 & 0x42  \\
+			\hline
+			0x133702 & 0x43  \\
+			\hline
+			0x133703 & 0x44  \\
+			\hline
+			0x133704 & 0x45  \\
+			\hline
+			0x133705 & 0x46  \\
+			\hline
+			0x133706 & 0x47  \\
+			\hline
+			0x133707 & 0x48  \\
+			\hline
+			0x133708 & 0x49  \\
+			\hline
+			0x133709 & 0x4a  \\
+			\hline
+			0x13370a & 0x4b  \\
+			\hline
+			0x13370b & 0x4c  \\
+			\hline
+			0x13370c & 0x4d  \\
+			\hline
+			0x13370d & 0x4e  \\
+			\hline
+			0x13370e & 0x4f  \\
+			\hline
+			0x13370f & 0x50  \\
+			\hline
+		\end{tabular}
+	\end{center}
+	\caption{Acceso a una palabra de 16 caracteres}\label{tab:access_word_16_characters}
+\end{table}
+
+Para poder acceder a una palabra de 16 o más caracteres, esta es como si se invirtiera
+por el \textit{little endian}, para que así se pueda acceder de forma sencilla.
+En el ejemplo anterior, vamos a tener 2 registros: \mintinline{ASM}{mov rsi, [rdi]; 0x4847464544434241}
+y luego otro \mintinline{ASM}{mov rsi, [rdi + 8]; 0x504f4e4d4c4b4a49}.
+
+Así pues, para reconstruir un valor más largo: mantén las palabras cuádruples
+en el orden en que las recibes, pero invierte el orden de los bytes dentro de cada una.
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kcC8Wxt3QAJTSSfPPCsO8a0bnOP.0lM0ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Dword by Dword}\label{subsec:dword_by_dword}
+
+El orden de los bytes no es exclusivo de los valores de 64 bits, esto
+también pasa en 32 bits.
+
+Por ejemplo , si \mintinline{ASM}{rdi} a punta a la memoria q contiene estos valores \( (11\ 22\ 33\ 44\ 55\ 66\ 77\ 88) \), si lo queremos
+pasa a los registros \mintinline{ASM}{esi, edx}, estos tendrían los siguiente valores \( 0x44332211 \) y \( 0x88776655 \) respectivamente
+
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{EKih6ki-vv_nq6tzkmC3JU6Y0ct.01M0ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Word by Word}\label{subsec:word_by_word}
+
+La regla nunca cambia: los bytes que se invierten son exactamente los mismos que los de la lectura.
+Cuando se lee una palabra, se intercambian sus dos bytes; las palabras se mantienen
+en el orden de las direcciones. (Y en una lectura de un solo byte no hay nada que intercambiar,
+por lo que los bytes individuales nunca necesitan corrección de endianidad).
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{Qzj9-W0xDgq6uCYPruerxxOnQo4.0FN0ATNywSMycjN4EzW}
+\end{flagbox}
 \subsection{Bytes by Bytes}\label{subsec:bytes_by_bytes}
+Y aquí está la clave. Un solo byte no tiene ningún orden que invertir, por lo que
+los valores inmediatos son los caracteres, que ya están en orden: 0x41 es simplemente «A».
+Dieciséis comparaciones de bytes y sin necesidad alguna de corregir el endianismo.
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{QMWGdiuJfVL5j_dUt82O52ZQ0Eh.0VN0ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Cracking a Struct}\label{subsec:cracking_a_struct}
+
+Este sirve de ejemplo, donde lo que busca es que en código real de un programa, este no
+pasa por suele trabajarse así, suelen ser \textit{structs}, y aquí se esta realizando
+un ejemplo de como sería si se trabajase con alguna de estas.
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{Afr8ZSVIZlY8xfSx9FmvfLAX0PE.0lN0ATNywSMycjN4EzW}
+\end{flagbox}
 \subsection{Scrambled Struct}\label{subsec:scrambled_struct}
+
+En este caso a comparacion del anterio \ref{subsec:cracking_a_struct} el orden
+en que se encuentran en memoria no garantiza que estén en un orden y el orden en que aparecen las ubicaciones de
+las comparaciones no tiene nada que ver en como está realmente los bytes en memoria.
+
+Ahora se tiene que leer su desplazamiento a partir de la carga \mintinline{ASM}{[rdi + X]}.
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kuRnS0h1TPqyxufEcfKfJRNnDVt.01N0ATNywSMycjN4EzW}
+\end{flagbox}

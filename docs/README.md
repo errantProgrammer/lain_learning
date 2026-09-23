@@ -189,6 +189,46 @@ pdflatex -shell-escape writeup.tex
 
 - **Insignias de Fuentes (`\sourceBadge`):** `\sourceBadge{Libro}`, `\sourceBadge{Web}`, `\sourceBadge{Docs}`, `\sourceBadge{Curso}`, `\sourceBadge{Lab}`, `\sourceBadge{Writeup}`.
 
+### 5. Gestión de Imágenes por Capítulo (`\setchapterimagepath` o `\setimgpath`)
+
+Permite seleccionar dinámicamente la carpeta donde residen las imágenes del capítulo (por ejemplo `capituloXX/img/` o `computer101/img/`), facilitando que `\includegraphics` encuentre los archivos sin conflictos de rutas relativas:
+
+```latex
+% En la cabecera del capítulo:
+\setchapterimagepath{chapters/knowledge_base/pwn.college/computer101}
+% O en un capítulo genérico:
+% \setchapterimagepath{capituloXX}
+
+% Luego en cualquier subsección:
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.8\textwidth]{mi_captura.png} % O img/mi_captura.png
+  \caption{Descripción}
+\end{figure}
+```
+
+Para incorporar múltiples directorios de imágenes en un mismo capítulo, usa `\addchapterimagepath{otra_carpeta}`.
+
+### 6. Mini-TOCs Locales por Capítulo o Writeup (`\chaptertoc` y `\localtoc`)
+
+Para evitar que el Índice General del libro crezca indefinidamente a decenas de páginas, el proyecto adopta una arquitectura de doble nivel:
+- **Índice General Ejecutivo:** Al inicio del libro (`main_compilation.tex`), muestra únicamente los Capítulos principales (`\etocsettocdepth{chapter}`).
+- **Mini-TOC de Capítulo (`\chaptertoc`):** Colócalo tras `\chapter{...}` para mostrar un recuadro interactivo y estilizado con las secciones del tema:
+  ```latex
+  \chapter{PWN College - Computer 101}
+  \chaptertoc
+  ```
+- **Mini-TOC de Sección a 2 Columnas (`\sectiontoc`):** Colócalo tras `\section{...}` para generar una lista en dos columnas con **únicamente los nombres de las subsecciones** (sin páginas ni desbordes):
+  ```latex
+  \section{Your First Program}
+  \sectiontoc
+  ```
+- **Mini-TOC de Writeup (`\localtoc`):** Colócalo tras `\section{...}` en writeups individuales para desglosar sus fases (`Reconocimiento`, `Explotación`, etc.):
+  ```latex
+  \section{HTB - Lame}
+  \localtoc
+  ```
+
 ---
 
 ## ➕ Cómo agregar un nuevo Writeup al Recopilatorio
