@@ -1,17 +1,215 @@
 % !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
 % !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
 \section{Assembly Assortment}\label{sec:assembly_assortment}
+
+\sectiontoc
+
 \subsection{Video - Data}\label{subsec:video_data}
+
+Un video pasado, que me falta documentarlo.
+
 \subsection{Reverse the Calculation}\label{subsec:reverse_the_calculation}
+
+En la sección pasada \ref{sec:08endian_escapades}, aquí se busca que
+entiendas el código que se esta ejecutando y que no solo se queda en la parte de decifrar mensajes,
+también puede aparecer operaciones matemáticas, como la suma que se realiza con la instrucción
+\mintinline{ASM}{add}
+
+\begin{codebox}[ASM]{Ejemplo de la suma}
+	mov rax, 0x60
+	add rax, 0x12 ; rax = 0x72
+\end{codebox}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kGkiieY2KzlxL5LxWrBrkf1k4dH.0FM1czMywSMycjN4EzW}
+\end{flagbox}
+
+
 \subsection{Reverse the Reverse}\label{subsec:reverse_the_reverse}
+Ahora le toca a la resta(\mintinline{ASM}{sub})
+\begin{codebox}[ASM]{Ejemplo de la resta}
+	mov rax, 0x60
+	sub rax, 0x12 ; rax = 0x4E
+\end{codebox}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{MB_YpNVKQ7p-ZgFcSeAnoaG7ahe.0VM1czMywSMycjN4EzW}
+\end{flagbox}
 \subsection{Dealing with Bitwise Operations}\label{subsec:dealing_with_bitwise_operations}
+
+Una nueva instrucción son las de las operaciones de \textbf{\textit{bitwisie}}, en estas
+son operaciones que se realiza bit a bit, como la instrucción \textbf{XOR},
+donde el resultado es \( 1 \), solo si uno de los 2 valores tiene un \( 1 \).
+
+\begin{center}
+	\begin{tabular}{lcl}
+		     & 01100001 & (0x61, 'a') \\
+		\^{} & 00101010 & (0x2a, 42)  \\
+		\midrule
+		     & 01001011 & (0x4b, 75)
+	\end{tabular}
+\end{center}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{04o4alkjz9byl-KK7KojlrvcCXt.0lM1czMywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Even or Odd}\label{subsec:even_or_odd}
+
+Aquí se relaiza una nueva instrucción \mintinline{ASM}{and}, donde el resultado será \( 1 \), si
+los 2 valores son \( 1 \).
+
+Este es interesante, porque si queremos saber si un número es par o impar, solo basta con analizar su último bit
+si este es 0 es par, caso contrario sería impar; después de haberle hecho \( and rax, 1 \).
+
+\begin{center}
+	\begin{tabular}{lcl}
+		   & 1011 0111 & (your value)                  \\
+		\& & 0000 0001 & (the mask)                    \\
+		\midrule
+		   & 0000 0001 & (only the lowest bit suvives)
+	\end{tabular}
+\end{center}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{Ax-u-gyMQoU-ebrcdAbOEPQgLWF.0VM1ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Masking Bits}\label{subsec:masking_bits}
+
+Como el operador \mintinline{ASM}{and} compara bit a bit y solo es \( 1 \), si los 2 son \( 1 \);
+por lo tanto, podemos decidir quedarnos con los valores que deseamos.
+
+\begin{center}
+	\begin{tabular}{lcl}
+		   & 1011 0111 & (your value)                              \\
+		\& & 0000 1111 & (the mask: keep the low 4 bits)           \\
+		\midrule
+		   & 0000 0111 & (everything above the low 4 bits is gone)
+	\end{tabular}
+\end{center}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kPbD58Xkw5Mmbpmgk7eUvsLBcXv.0lM1ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Lowercase a String}\label{subsec:lowercase_a_string}
+
+Ahora la instrucción \mintinline{ASM}{or}, que realiza lo contrario a la instrucción
+\mintinline{ASM}{and}, revisa byte a byte, y pasa si alguno de los valores es \( 1 \).
+
+Esto de aquí, se convierte en una ideal para activar bits, para activar
+específicos sin modificar el resto.
+
+\begin{table}[htbp]
+	\begin{center}
+		\begin{tabular}{lcl}
+			         & 0100 0001 & ('A', 0x41)    \\
+			\textbar & 0010 0000 & (turn on 0x20) \\
+			\midrule
+			         & 0110 0001 & ('a', 0x61)
+		\end{tabular}
+	\end{center}
+	\caption{Ejemplo, convierte una letra mayúscula y su equivalente en minúscula.}\label{tab:convert_lowercase_to_upper_case}
+\end{table}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{orAEAgx62AkaNJefpZAiWGqX8V_.01M1ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Uppercase a String}\label{subsec:uppercase_a_string}
+
+Ahora si queremos realizar el proceso inverso, solo debemos de apagar el 5to bit.
+
+\begin{center}
+	\begin{tabular}{lcl}
+		   & 0110 0001 & ('a', 0x61)     \\
+		\& & 1101 1111 & (turn off 0xDF) \\
+		\midrule
+		   & 0100 0001 & ('A', 0x41)
+	\end{tabular}
+\end{center}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{gb18fpa-9kZI1IXHqvrxvIWZWHn.0FN1ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Swap Case}\label{subsec:swap_case}
+
+Para invertir un bit de activo a desactivado, y viceversa se necesita el \mintinline{ASM}{xor}.
+Ya que el XOR activa un bit si sus dos entradas son distintos.
+
+Por lo tanto, si aplicamos \mintinline{ASM}{xor}, en el 5to bit, vamos a ir invirtiendo de mayúscula a minúscula
+y viceversa.
+
+\begin{center}
+	\begin{tabular}{lcl}
+		   & 0110 0001 & ('a', 0x61) \\
+		\& & 0010 0000 & (flip 0x20) \\
+		\midrule
+		   & 0100 0001 & ('A', 0x41)
+	\end{tabular}
+\end{center}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{QB2ZvqReJ8AwwW0GdPiB6BEKrRL.0VN1ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Texto - Bit Shifting}\label{subsec:texto_bit_shifting}
+
+Podemos mover los bits tanto para la izquierda, o derecha, y luego completando con 0,
+y los números que se ven desplazados son eliminados.
+
+Y con esto, cada posición a la izquierda es como si se multiplicará con 2(siempre que no se borren los números de arriba),
+o dividiendo por 2, por cada posición a la derecha(sin ningún residuo).
+
 \subsection{Shifting Left}\label{subsec:shifting_left}
+Esto se realiza con la instrucción \mintinline{ASM}{shl rax, n}.
+
+Donde n, es el valor con el cual se multiplica \( 2^n \).
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kvOpXurIOOXIPl2zNl_B89Uxrcj.0lN1ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Shifting Right}\label{subsec:shifting_right}
+Esto se realiza con la instrucción \mintinline{ASM}{shr rax, n}.
+Donde n, es el valor con el cual se divide \( 2^n \).
+\begin{flagbox}{Flag Capturada}
+	pwn.college{cfXl6s6CMbBorRzEjhvzf_Kx3Yp.01N1ATNywSMycjN4EzW}
+\end{flagbox}
+
 \subsection{Texto - Guide: Reading Stored Data in GDB}\label{subsec:texto_guide_reading_a_stored_data_in_gdb}
+
+En la sección «Abrir el archivo Flag», con RIP, utilizaste una etiqueta y una
+instrucción «lea» para pasar la dirección de los bytes almacenados a la función
+«open». En «Examinar la memoria con GDB», utilizaste «x/s» para mostrar la cadena en una dirección.
+
+El siguiente reto combina esas ideas en un binario que debes analizar. El binario
+ya ha realizado el trabajo al estilo «lea» por ti: uno de sus registros contendrá
+la dirección en tiempo de ejecución de una cadena almacenada. En lugar de buscar
+cada byte secreto como un valor inmediato dentro de un cmp, recorre el código
+paso a paso hasta que un registro apunte a la cadena almacenada y, a continuación, examina esa dirección como una cadena:
+
+\begin{codebox}[ASM]{}
+	(gdb) x/s $rsi
+\end{codebox}
+
+
 \subsection{Loops on Data}\label{subsec:loops_on_data}
+
+Hasta ahora, los valores que has estado invirtiendo estaban incrustados directamente
+en las instrucciones como operandos inmediatos. Sin embargo, en este desafío se
+compara el primer argumento del programa con una cadena codificada de forma fija
+dentro del propio desafío. La cadena se encuentra en una sección diferente del archivo
+del programa: la sección .rodata (datos de solo lectura) del binario, en lugar de en las propias instrucciones.
+
+Hay varias opciones para encontrarla:
+
+\begin{itemize}
+	\item La más habitual: avanza paso a paso hasta donde se realiza la comparación y utiliza «x» para ver los registros que apuntan a los datos.
+	\item Utilizar el comando `strings /challenge/reverse-me` para listar todas las cadenas imprimibles del binario. Hay muchas, pero una de ellas será la contraseña.
+	\item Utilizar `objdump -s -j .rodata /challenge/reverse-me` para volcar el contenido sin procesar de la sección .rodata.
+\end{itemize}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{AMjHJFHfLcynFDzkhyu3aoXf8fW.01M1czMywSMycjN4EzW}
+\end{flagbox}
