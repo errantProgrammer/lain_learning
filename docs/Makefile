@@ -14,9 +14,9 @@ all: master
 master:
 	@mkdir -p _minted
 	@echo "[*] Compilando Documento Maestro (Pasada 1/2)..."
-	@$(PDFLATEX) main_compilation.tex
+	@texfot $(PDFLATEX) main_compilation.tex
 	@echo "[*] Compilando Documento Maestro (Pasada 2/2 para índices y dashboard)..."
-	@$(PDFLATEX) main_compilation.tex
+	@texfot $(PDFLATEX) main_compilation.tex
 	@echo "[+] Compilación exitosa: main_compilation.pdf"
 
 # ================================================================================
@@ -24,7 +24,7 @@ master:
 # ================================================================================
 kb learn knowledge:
 	@echo "[*] Compilando Capítulo de Knowledge Base / Lo Aprendido..."
-	@cd chapters/knowledge_base && mkdir -p _minted && $(PDFLATEX) knowledge_base.tex
+	@cd chapters/knowledge_base && mkdir -p _minted && texfot $(PDFLATEX) knowledge_base.tex
 	@echo "[+] Knowledge Base generada: chapters/knowledge_base/knowledge_base.pdf"
 
 # ================================================================================
@@ -32,7 +32,7 @@ kb learn knowledge:
 # ================================================================================
 guide docs:
 	@echo "[*] Compilando Guía / Manual Técnico de Documentación..."
-	@cd chapters/guide && mkdir -p _minted && $(PDFLATEX) template_guide.tex
+	@cd chapters/guide && mkdir -p _minted && texfot $(PDFLATEX) template_guide.tex
 	@echo "[+] Guía generada: chapters/guide/template_guide.pdf"
 
 # Compilar todos los capítulos bajo chapters/ (guide + knowledge_base)
@@ -41,76 +41,87 @@ chapters:
 		dir=$$(dirname $$f); \
 		base=$$(basename $$f); \
 		echo "[*] Compilando capítulo: $$f"; \
-		(cd $$dir && mkdir -p _minted && $(PDFLATEX) $$base); \
+		(cd $$dir && mkdir -p _minted && texfot $(PDFLATEX) $$base); \
 	done
 	@echo "[+] Todos los capítulos han sido compilados exitosamente."
-
-# Compilar un capítulo genérico pasando NAME=... (ej: make chapter NAME=knowledge_base)
-chapter:
-	@if [ -z "$(NAME)" ]; then \
-		echo "[!] Error: Especifica el nombre de la carpeta con NAME=..."; \
-		echo "    Ejemplos: make chapter NAME=knowledge_base"; \
-		echo "              make chapter NAME=guide"; \
-		exit 1; \
-	fi
-	@file=$$(find chapters/$(NAME) -maxdepth 1 -name "*.tex" 2>/dev/null | head -n 1); \
-	if [ -z "$$file" ]; then \
-		echo "[!] No se encontró ningún archivo .tex en chapters/$(NAME)"; \
-		exit 1; \
-	fi; \
-	dir=$$(dirname $$file); \
-	base=$$(basename $$file); \
-	echo "[*] Compilando capítulo: $$file..."; \
-	(cd $$dir && mkdir -p _minted && $(PDFLATEX) $$base); \
-	echo "[+] Capítulo generado exitosamente en: $$dir"
 
 # ================================================================================
 # Compilación de Writeups Individuales
 # ================================================================================
 writeups:
-	@for f in $(WRITEUPS); do \
-		dir=$$(dirname $$f); \
-		base=$$(basename $$f); \
+	@echo "[*] Buscando y compilando todos los writeups..."
+	@FILES="$(WRITEUPS)"; \
+	if [ -z "$$FILES" ]; then \
+		FILES=$$(find . -type f -name "writeup.tex"); \
+	fi; \
+	if [ -z "$$FILES" ]; then \
+		echo "[!] No se encontraron writeups para compilar."; \
+		exit 1; \
+	fi; \
+	for f in $$FILES; do \
+		dir=$$(dirname "$$f"); \
+		base=$$(basename "$$f"); \
 		echo "[*] Compilando writeup individual: $$f"; \
-		(cd $$dir && mkdir -p _minted && $(PDFLATEX) $$base); \
+		(cd "$$dir" && mkdir -p _minted && texfor $(PDFLATEX) "$$base"); \
 	done
 	@echo "[+] Todos los writeups individuales han sido compilados exitosamente."
 
 writeup:
 	@if [ -z "$(TARGET)" ] && [ -z "$(NAME)" ]; then \
-		echo "[!] Especifica la máquina o reto con TARGET=nombre"; \
+		echo "[!] Error: Especifica la máquina o reto con TARGET=nombre o NAME=nombre"; \
 		echo "    Ejemplo: make writeup TARGET=lame"; \
 		echo "             make writeup TARGET=pico_format_string"; \
 		exit 1; \
 	fi
 	@tgt=$${TARGET:-$(NAME)}; \
-	file=$$(find writeups -type f -name "writeup.tex" | grep "/$$tgt/" | head -n 1); \
+	echo "[*] Buscando writeup para: $$tgt..."; \
+	file=$$(find . -type f -name "writeup.tex" | grep "/$$tgt/" | head -n 1); \
 	if [ -z "$$file" ]; then \
-		echo "[!] No se encontró writeup para el objetivo: $$tgt"; \
+		echo "[!] Error: No se encontró writeup.tex para el objetivo: $$tgt"; \
 		exit 1; \
 	fi; \
-	dir=$$(dirname $$file); \
-	echo "[*] Compilando writeup: $$file..."; \
-	(cd $$dir && mkdir -p _minted && $(PDFLATEX) writeup.tex); \
+	dir=$$(dirname "$$file"); \
+	echo "[*] Archivo encontrado en: $$file"; \
+	echo "[*] Compilando: writeup.tex..."; \
+	(cd "$$dir" && mkdir -p _minted && texfot $(PDFLATEX) writeup.tex); \
 	echo "[+] Writeup generado exitosamente en: $$dir"
 
 file:
 	@if [ -z "$(FILE)" ]; then \
-		echo "[!] Error: Especifica el archivo con FILE=ruta/al/archivo.tex"; \
+		echo "[!] Error: Especifica el archivo con FILE=nombre (ej: make file FILE=computer101)"; \
 		exit 1; \
 	fi
-	@dir=$$(dirname $(FILE)); \
-	base=$$(basename $(FILE)); \
-	echo "[*] Compilando: $(FILE)..."; \
-	(cd $$dir && mkdir -p _minted && $(PDFLATEX) $$base); \
+	@echo "[*] Buscando $(FILE).tex..."
+	@FOUND=$$(find . -type f -name "$(FILE).tex" | head -n 1); \
+	if [ -z "$$FOUND" ]; then \
+		echo "[!] Error: No se encontró $(FILE).tex en ninguna carpeta."; \
+		exit 1; \
+	fi; \
+	dir=$$(dirname "$$FOUND"); \
+	base=$$(basename "$$FOUND"); \
+	echo "[*] Archivo encontrado en: $$FOUND"; \
+	echo "[*] Compilando: $$base..."; \
+	(cd "$$dir" && mkdir -p _minted && texfot $(PDFLATEX) "$$base"); \
 	echo "[+] Generado exitosamente en: $$dir"
-
 # ================================================================================
 # Modos de Visualización en Vivo y Limpieza
 # ================================================================================
 watch:
-	@mkdir -p _minted
-	latexmk -pvc -pdf -pdflatex="$(PDFLATEX)" main_compilation.tex
+	@if [ -n "$(FILE)" ]; then \
+		FOUND=$$(find . -type f -name "$(FILE).tex" | head -n 1); \
+		if [ -z "$$FOUND" ]; then \
+			echo "[!] Error: No se encontró $(FILE).tex en ninguna carpeta."; \
+			exit 1; \
+		fi; \
+		dir=$$(dirname "$$FOUND"); \
+		base=$$(basename "$$FOUND"); \
+		echo "[*] Modo continuo activado para: $$FOUND"; \
+		(cd "$$dir" && mkdir -p _minted && latexmk -pvc -pdf -pdflatex="$(PDFLATEX)" "$$base"); \
+	else \
+		mkdir -p _minted; \
+		echo "[*] Modo continuo activado para: main_compilation.tex"; \
+		latexmk -pvc -pdf -pdflatex="$(PDFLATEX)" main_compilation.tex; \
+	fi
 
 clean:
 	@echo "[*] Limpiando archivos temporales en todo el proyecto..."
@@ -128,10 +139,9 @@ help:
 	@echo "  make kb                  -> Compila SOLO el capítulo de lo aprendido (Knowledge Base)"
 	@echo "  make docs (o make guide) -> Compila la guía técnica (chapters/guide/template_guide.pdf)"
 	@echo "  make chapters            -> Compila todos los capítulos de documentación y aprendizaje"
-	@echo "  make chapter NAME=...    -> Compila un capítulo por nombre (ej: make chapter NAME=knowledge_base)"
 	@echo "  make writeups            -> Compila automáticamente TODOS los writeups individuales"
 	@echo "  make writeup TARGET=...  -> Compila un writeup por nombre (ej: make writeup TARGET=lame)"
-	@echo "  make file FILE=...       -> Compila un archivo específico por ruta exacta"
+	@echo "  make file FILE=nombre    -> Compila el archivo 'nombre.tex' en cualquier subcarpeta."
 	@echo "  make watch               -> Modo continuo en vivo (compila al guardar en el editor)"
 	@echo "  make clean               -> Elimina todos los archivos auxiliares (.aux, .log, _minted)"
 	@echo "================================================================================="
