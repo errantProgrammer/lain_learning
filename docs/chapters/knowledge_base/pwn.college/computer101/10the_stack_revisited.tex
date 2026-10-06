@@ -200,12 +200,22 @@ para desplazar argv[0] a esa dirección.
 \end{flagbox}
 
 \subsection{Aligning the Stack Through GDB}\label{subsec:10-08aligning_the_stack_through_gdb}
-
+Lo que pasa cuando se utilizar el \textbf{GDB}, para poder ver la ejecución del programa, este agrega también
+su propias variables de entorno, lo que hace que se desplace los valores que estemos buscando, de su ejecución real.
 \begin{flagbox}{Flag Capturada}
-	flag
+	pwn.college{kHCjlIvv0sMt8fykwU-tc1seOW2.0VM2kDNywSMycjN4EzW}
 \end{flagbox}
 
 \subsection{Aligning the Stack Through GDB, Generalized}\label{subsec:10-09aligning_the_stack_through_gdb_generalized}
+
+El reto anterior, la shell hereda tanto el entorno interactivo como el de afuera de GDB
+esto no pasa en la vida real, porque las diferencias de entorno suelen ser más significativas
+entre tu configuración local y el sistema de destino que se está analizando.
+
+
+Para poder controlar el entorno donde se esta ejecutando el sistema, se puede usar el comando
+\mintinline{BASH}{env -i}, y a su vez, se le puede agregar variables de entorno según lo necesitemos.
+\mintinline{BASH}{env -i PWN=COLLEGE /program}
 \begin{flagbox}{Flag Capturada}
-	flag
+	pwn.college{sL6P3pTXJWED5Re8Dq2jM5dA2Oz.0lM2kDNywSMycjN4EzW}
 \end{flagbox}
