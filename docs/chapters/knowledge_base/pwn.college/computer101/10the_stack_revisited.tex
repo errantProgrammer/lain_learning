@@ -173,13 +173,30 @@ Tenemos que tener en cuenta 2 cosas:
 \end{enumerate}
 
 \begin{flagbox}{Flag Capturada}
-	flag
+	pwn.college{ojwZQyw-5GHLbcGlvJvvBkPjVoq.0VO1kDNywSMycjN4EzW}
 \end{flagbox}
 
 \subsection{Aligning the Stack Through the Environment}\label{subsec:10-07aligning_the_stack_through_the_environment}
 
+La mecanica del desplazamiento (\textit{shift})
+
+\begin{itemize}
+	\item \textbf{Efecto de Empuje: } Como la pila crece hacia direcciones menores, cualquier byte adicional adicional que se
+	      inyecte en la sección de cadenas empujará todo lo que se construya, después hacia direcciones de memoria más pequeñas.
+	\item \textbf{Relación 1 a 1:} Agregar exactamente un carácter extra a una variable de entorno hace \mintinline{ASM}{argv[0]} y el
+	      \mintinline{ASM}{rsp} termine exactamente un byte más abajo en la memoria.
+	\item \textbf{Contabilización Estricta: } El kernel empuja la cadena completa a la pila.
+\end{itemize}
+
+En este caso, «env -i» significa «ejecutar el siguiente comando con un entorno vacío»;
+los pares NOMBRE=VALOR que se indiquen después de «-i» son las únicas cadenas de entorno que recibe el programa hijo.
+En este desafío, toma una línea de base limpia con env -i /challenge/program para
+ver en qué dirección quiere que esté argv[0]. A continuación, ejecútalo de nuevo
+con exactamente una variable de entorno, con el número justo de «x» en su valor,
+para desplazar argv[0] a esa dirección.
+
 \begin{flagbox}{Flag Capturada}
-	flag
+	pwn.college{MJBRs_d5qvHMMNSEeGFr-lcTxPo.0FM2kDNywSMycjN4EzW}
 \end{flagbox}
 
 \subsection{Aligning the Stack Through GDB}\label{subsec:10-08aligning_the_stack_through_gdb}
