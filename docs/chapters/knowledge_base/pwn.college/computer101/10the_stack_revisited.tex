@@ -1,12 +1,221 @@
 % !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
 % !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
-\section{The Stack, Revisited}\label{sec:the_stack_revisited}
-\subsection{Reaching Into the Caller's Frame}\label{subsec:reaching_into_the_callers_frame}
-\subsection{Loading Stale Stack Data}\label{subsec:loading_stale_stack_data}
-\subsection{Stealing Stale Stack Data}\label{subsec:stealing_stale_stack_data}
-\subsection{Reserving Your Own Frame}\label{subsec:reserving_your_own_frame}
-\subsection{Using Your Own Frame}\label{subsec:using_your_own_frame}
-\subsection{Environment Variables on the Stack}\label{subsec:environment_variables_on_the_stack}
-\subsection{Aligning the Stack Through the Environment}\label{subsec:aligning_the_stack_through_the_environment}
-\subsection{Aligning the Stack Through GDB}\label{subsec:aligning_the_stack_through_gdb}
-\subsection{Aligning the Stack Through GDB, Generalized}\label{subsec:aligning_the_stack_through_gdb_generalized}
+\section{The Stack, Revisited}\label{sec:10the_stack_revisited}
+
+\sectiontoc
+
+\subsection{Reaching Into the Caller's Frame}\label{subsec:10-01reaching_into_the_callers_frame}
+
+La pila almacena las variables locales de las funciones: datos que estas utilizan para funciones que no son
+necesariamente necesarias para otras funciones del programa.
+
+Por lo tanto, tú podrías acceder al marco de una función para poder conocer
+los valores de sus variables, y la dirección de retorno.
+
+\begingroup
+\setlength{\dashlinedash}{1pt}
+\setlength{\dashlinegap}{2pt}
+
+\begin{tabular}{:c:p{8cm}}
+	\multicolumn{1}{c}{\ }        & \makecell{[smaller addresses] \\ \( \leftarrow \)rsp, immediately before `call solve` }\\
+	\cdashline{1-1}
+	\makecell{caller's local region                               \\ \dots your flag is in here \dots } &                                                                   \\
+	\cdashline{1-1}
+	caller's saved rbp            &                               \\
+	\cdashline{1-1}
+	return address (back to main) &                               \\
+	\cdashline{1-1}
+	\dots main's frame \dots      &                               \\
+	\cdashline{1-1}
+	\multicolumn{1}{c}{\ }        & [large addresses]             \\
+\end{tabular}
+\endgroup
+
+La instrucción \mintinline{ASM}{call solve} realiza 2 acciones:
+
+\begin{enumerate}
+	\item Empula la dirección de retorno a la pila (8bytes), por lo que la dirección de retorno acaba ocupando una dirección menor que la que ya había en la pantalla.
+	\item Salta a tu código.
+\end{enumerate}
+
+El primer paso es fundamental, puesto que la pila crece al revéz. La instrucción
+\mintinline{ASM}{pop} suma 8 a \mintinline{ASM}{rsp} y la instrucción
+\mintinline{ASM}{push} resta 8, equivalencias:
+
+\begin{itemize}
+	\item \mintinline{ASM}{pop rdi} = \mintinline{ASM}{mov rdi, [rsp]} y \mintinline{ASM}{add rsp, 8}
+	\item \mintinline{ASM}{push rdi} = \mintinline{ASM}{sub rsp ,8} y \mintinline{ASM}{mov [rsp], rdi}
+\end{itemize}instrucción
+Al momento de ejecutarse, la pila tiene este aspecto:
+
+
+\begingroup
+\setlength{\dashlinedash}{1pt}
+\setlength{\dashlinegap}{2pt}
+\begin{tabular}{:c:p{8cm}}
+	\multicolumn{1}{c}{\ }        & [ smaller addresses, where rsp goes if you grow your own frame ] \\
+	\cdashline{1-1}
+	return address (back to main) & \( \leftarrow \) rsp points here                                 \\
+	\cdashline{1-1}
+	\makecell{caller's stack frame                                                                   \\ \dots your flag is in here \dots } &                                                                   \\
+	\cdashline{1-1}
+	return address (back to main) &                                                                  \\
+	\cdashline{1-1}
+	\dots main's frame \dots      &                                                                  \\
+	\cdashline{1-1}
+	\multicolumn{1}{c}{\ }        & [large addresses]                                                \\
+\end{tabular}
+\endgroup
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{wtu3_OlESb6TzTa1PtIXgZ9ZjUS.0FO1kDNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Loading Stale Stack Data}\label{subsec:10-02loading_stale_stack_data}
+
+En este caso, vamos a utilizar los bytes, que se dejarón atrás cuando una función
+ya devolvió su resultado.
+
+Cuando una función termina y regresa, los bytes que utilizo no se elimina, sino que se
+quedan obsoletos, esto por un tema de eficiencia.
+
+Cuando los datos que quedan son confidenciales, omitir ese borrado puede convertirse en una
+vulnerabilidad.
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{AZKP7tCbsW41IyFS_Zzsf4hgHU2.0lN2ITNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Stealing Stale Stack Data}\label{subsec:10-03stealing_stale_stack_data}
+
+Se utilizará la misma idea de los datos residuales en la pila con un búfer de bytes.
+
+En este reto, nos pide que llamemos a la función \textit{read\_flag}, y luego imprimir por
+\textbf{\textit{stdout}} los bytes obsoletos de la flag provenientes del marco de la función
+llamada.
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{EVdjOB2CbkZqndmuAe6SpseIdZF.01NzITNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Reserving Your Own Frame}\label{subsec:10-04reserving_your_own_frame}
+
+Hasta el momento, las funciones mantienen sus valores temporales en los registros;
+pero una función puede necesitar más espacio de trabajo (\textit{scrathc space})
+del que pueden contener los regitros.
+
+En la arquitecutra x86, una función crea espacio de trabajo en la pila modificando
+el puntero de la pila \mintinline{ASM}{rsp}, para que apunte a una dirección
+más baja(\mintinline{ASM}{sub rsp, 256}).
+
+Solo se tiene que considerar 3 cosas:
+
+\begin{enumerate}
+	\item Ahora se van a necesitar diferentes desplazamientos(\textit{offset}) relativos a \mintinline{ASM}{rsp}.
+	\item Los bytes que se acaban de mover, son memoria común de la pila, y pueden contener datos dejados por código ejecutado anteriormente.
+	\item Se tiene que devolver rsp a su posición original antes de retornar.
+\end{enumerate}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kz_F2pbSUCr4BskErhXacY_APsE.0FOzITNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Using Your Own Frame}\label{subsec:10-05using_your_own_frame}
+
+En este desafio se buscando presentar que hagas uso de la pila que limpiaste para
+luego poder hacer comparaciones, con un tamaño específico de la pila
+y contar la cantidad de repetidos, buena forma depoder prácticar lo aprendiendo anteriormente.
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{UP2DMXRmvENtSlQ66pSI2CeQvbg.0FO1ATNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Environment Variables on the Stack}\label{subsec:10-06environment_variables_on_the_stack}
+
+Justo después de la lista de argumentos(\mintinline{C}{argc, argv}), el núcleo coloca
+las variables de entorno. Al igual que \mintinline{C}{argv}, estas se almacenan en la pila
+como una matriz de punteros a cadenas, en la que cada cadena incluye el valor de
+la variable de la siguiente mantera \mintinline{TEXT}{HOME=/home/user/...}.
+
+En caso el programa sea llamado sin argumentos, y una única variable de entorno llamada FLAG,
+la estructura de la pila podría ser la siguiente:
+
+\begin{verbatim}
+   Address     | Contents
+   +------------------------+
+   | rsp + 0   | 1          | <--- argc
+   +------------------------+
+   | rsp + 8   | rsp + 128  |--+  argv[0]: pointer to the program name
+   +------------------------+  |
+   | rsp + 16  | 0          |  |  NULL (end of argv)
+   +------------------------+  |
+   | rsp + 24  | rsp + 200  |--+--+  envp[0]: pointer to the first env var
+   +------------------------+  |  |
+   | rsp + 32  | 0          |  |  |  NULL (end of envp)
+   +------------------------+  |  |
+                               |  |
+     Address   | Contents      |  |
+   +------------------------+  |  |
+   | rsp + 128 | "/tmp/..." |<-+  |  the program name
+   +------------------------+     |
+   | ...       | ...        |     |
+   +------------------------+     |
+   | rsp + 200 | "FLAG=..." |<----+  the first env var: the `FLAG` variable
+   +------------------------+
+\end{verbatim}
+
+Tenemos que tener en cuenta 2 cosas:
+
+\begin{enumerate}
+	\item Tanto \mintinline{C}{argv} y \mintinline{C}{envp} terminan en \mintinline{C}{NULL} al final de cada lista de punteros.
+	\item Las cadenas de \mintinline{C}{envp} tiene el formato \textbf{NOMBRE=VALOR}. Por lo tanto, \mintinline{C}{envp[0]}
+	      apunta a la cadena que comienza con el nombre de la primavera variable de entorno.
+\end{enumerate}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{ojwZQyw-5GHLbcGlvJvvBkPjVoq.0VO1kDNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Aligning the Stack Through the Environment}\label{subsec:10-07aligning_the_stack_through_the_environment}
+
+La mecanica del desplazamiento (\textit{shift})
+
+\begin{itemize}
+	\item \textbf{Efecto de Empuje: } Como la pila crece hacia direcciones menores, cualquier byte adicional adicional que se
+	      inyecte en la sección de cadenas empujará todo lo que se construya, después hacia direcciones de memoria más pequeñas.
+	\item \textbf{Relación 1 a 1:} Agregar exactamente un carácter extra a una variable de entorno hace \mintinline{ASM}{argv[0]} y el
+	      \mintinline{ASM}{rsp} termine exactamente un byte más abajo en la memoria.
+	\item \textbf{Contabilización Estricta: } El kernel empuja la cadena completa a la pila.
+\end{itemize}
+
+En este caso, «env -i» significa «ejecutar el siguiente comando con un entorno vacío»;
+los pares NOMBRE=VALOR que se indiquen después de «-i» son las únicas cadenas de entorno que recibe el programa hijo.
+En este desafío, toma una línea de base limpia con env -i /challenge/program para
+ver en qué dirección quiere que esté argv[0]. A continuación, ejecútalo de nuevo
+con exactamente una variable de entorno, con el número justo de «x» en su valor,
+para desplazar argv[0] a esa dirección.
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{MJBRs_d5qvHMMNSEeGFr-lcTxPo.0FM2kDNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Aligning the Stack Through GDB}\label{subsec:10-08aligning_the_stack_through_gdb}
+Lo que pasa cuando se utilizar el \textbf{GDB}, para poder ver la ejecución del programa, este agrega también
+su propias variables de entorno, lo que hace que se desplace los valores que estemos buscando, de su ejecución real.
+\begin{flagbox}{Flag Capturada}
+	pwn.college{kHCjlIvv0sMt8fykwU-tc1seOW2.0VM2kDNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Aligning the Stack Through GDB, Generalized}\label{subsec:10-09aligning_the_stack_through_gdb_generalized}
+
+El reto anterior, la shell hereda tanto el entorno interactivo como el de afuera de GDB
+esto no pasa en la vida real, porque las diferencias de entorno suelen ser más significativas
+entre tu configuración local y el sistema de destino que se está analizando.
+
+
+Para poder controlar el entorno donde se esta ejecutando el sistema, se puede usar el comando
+\mintinline{BASH}{env -i}, y a su vez, se le puede agregar variables de entorno según lo necesitemos.
+\mintinline{BASH}{env -i PWN=COLLEGE /program}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{sL6P3pTXJWED5Re8Dq2jM5dA2Oz.0lM2kDNywSMycjN4EzW}
+\end{flagbox}
