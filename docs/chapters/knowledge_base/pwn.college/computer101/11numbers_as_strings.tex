@@ -1,16 +1,138 @@
 % !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
 % !TeX TXS-program:pdflatex = pdflatex -synctex=1 -interaction=nonstopmode --shell-escape %.tex
-\section{Numbers as Strings}\label{sec:numbers_as_strings}
-\subsection{Video - Assembly}\label{subsec:video_assembly}
-\subsection{A Single Digit}\label{subsec:a_single_digit}
-\subsection{Two Digits}\label{subsec:two_digits}
-\subsection{String to Integer}\label{subsec:string_to_integer}
-\subsection{Negative Numbers}\label{subsec:negative_numbers}
-\subsection{Where the Numbers Ends}\label{subsec:where_the_numbers_ends}
-\subsection{A Whole Program}\label{subsec:a_whole_program}
-\subsection{A Single Digit, Back to Text}\label{subsec:a_single_digit_back_to_text}
-\subsection{Divide and Remainder}\label{subsec:divide_and_remainder}
-\subsection{Drop the Leading Zero}\label{subsec:drop_the_leading_zero}
-\subsection{Integer to String}\label{subsec:integer_to_string}
-\subsection{Negative Numbers, Back to text}\label{subsec:negative_numbers_back_to_text}
-\subsection{Sum Them All}\label{subsec:sum_them_all}
+\section{Numbers as Strings}\label{sec:11numbers_as_strings}
+\subsection{Video - Assembly}
+Este es la referencia a un video pasado.
+\subsection{A Single Digit}\label{subsec:11-01a_single_digit}
+
+Las computadoras, reciben un montón de input en formato de texto, por ejemplo
+cuando pasamos un valor por parámetro como \textbf{\textit{12345}}, este no se recibe como número
+sino como 5 bits en formato \textit{ASCII}, y para poder convertir un texto a número
+se suele usar la función \mintinline{C}{atoi}.
+
+En el código \textit{ASCII}, el valor de \( 0 \) es \( 0x30 \), \( 1 \) es \( 0x31 \) \dots \( 9 \) es \( 0x39 \)
+\begin{codebox}[ASM]{SOlution}
+	.intel_syntax noprefix
+	.global atoi_digit
+	atoi_digit:
+	movzx rax, BYTE PTR [rdi]
+	sub rax, 0x30
+	ret
+\end{codebox}
+https://youtube.com/shorts/ADbXNFYlePI?si=Lng4NcVHgYMD_Jge
+\begin{flagbox}{Flag Capturada}
+	pwn.college{sK0lkWe8HVPu1pm3kLYL05j9bHo.0lM4kDNywSMycjN4EzW}
+\end{flagbox}
+\subsection{Two Digits}\label{subsec:11-02two_digits}
+
+Bueno ahora con 2 dígitos.
+
+\begin{codebox}[ASM]{Solucion}
+	.intel_syntax noprefix
+	.global atoi_digit
+	.global atoi
+
+	atoi_digit:
+	movzx rax, BYTE PTR [rdi]
+	sub rax, 0x30
+	ret
+
+	atoi:
+	push rdi
+
+	call atoi_digit
+	imul rax, 10
+
+	pop rdi
+	push rax
+
+	lea rdi, [rdi + 1]
+	call atoi_digit
+
+	pop rcx
+	add rax, rcx
+
+	ret
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{wo_I1U54BVUXOJFPIR19DZ84Dsl.01M4kDNywSMycjN4EzW}
+\end{flagbox}
+\subsection{String to Integer}\label{subsec:11-03string_to_integer}
+\begin{codebox}[ASM]{Solucion}
+	.intel_syntax noprefix
+	.global atoi
+
+	atoi:
+	xor rax, rax
+
+	loop:
+	movzx rcx, byte ptr [rdi]
+	cmp rcx, 0
+	je done
+
+	sub rcx, 0x30
+
+	imul rax, 10
+	add rax, rcx
+	inc rdi
+	jmp loop
+
+	done:
+	ret
+\end{codebox}
+\begin{flagbox}{Flag Capturada}
+	pwn.college{MPBk374KBZ9ZuG8Lf_z-Jifc1Tw.0FN4kDNywSMycjN4EzW}
+\end{flagbox}
+\subsection{Negative Numbers}\label{subsec:11-04negative_numbers}
+
+Ahora con números negativos.
+
+\begin{codebox}[ASM]{Solucion}
+	.intel_syntax noprefix
+	.global atoi
+
+	atoi:
+	xor rax, rax
+	xor r8, r8
+
+	loop:
+	movzx rcx, byte ptr [rdi]
+	cmp rcx, 0x2d
+	je negative
+	cmp rcx, 0
+	je done
+
+	sub rcx, 0x30
+
+	imul rax, 10
+	add rax, rcx
+	inc rdi
+	jmp loop
+
+	negative:
+	mov r8, 1
+	inc rdi
+	jmp loop
+	done:
+	cmp r8, 1
+	je multi_negative
+	ret
+
+	multi_negative:
+	imul rax, -1
+	ret
+\end{codebox}
+
+\begin{flagbox}{Flag Capturada}
+	pwn.college{QMhD2L9sERZdiJ8Tm39hK4_FSYA.0VN4kDNywSMycjN4EzW}
+\end{flagbox}
+
+\subsection{Where the Numbers Ends}\label{subsec:11-05where_the_numbers_ends}
+\subsection{A Whole Program}\label{subsec:11-06a_whole_program}
+\subsection{A Single Digit, Back to Text}\label{subsec:11-07a_single_digit_back_to_text}
+\subsection{Divide and Remainder}\label{subsec:11-08divide_and_remainder}
+\subsection{Drop the Leading Zero}\label{subsec:11-09drop_the_leading_zero}
+\subsection{Integer to String}\label{subsec:11-10integer_to_string}
+\subsection{Negative Numbers, Back to text}\label{subsec:11-11negative_numbers_back_to_text}
+\subsection{Sum Them All}\label{subsec:11-12sum_them_all}
